@@ -1,0 +1,2057 @@
+= Tworzenie aplikacji z użyciem Spring Framework 
+Jakub Marchwicki
+:toc: 
+:toc-title: Spis treści
+
+
+////
+Dodać wstęp
+////
+
+
+
+== Moduł 1: Wprowadzenie
+
+		
+=== Spring Framework
+
+Spring powstawał przeszło 10 lat, początkowo jako alternatywa dla przerośniętej i nadmiernie skomplikowanej specyfikacji EJB 2.x. Jednakże na przestrzeni ostatnich 10lat pod nazwą Framework ewoluował i obecnie pod nazwą Spring rozumiemy szeroki zestaw narzędzi wspomagających pracę programisty. Narzędzi, których rdzeniem jest właśnie Spring Framework. 
+
+Spring Framework został zapoczątkowny w 2000 roku i w założeniu miał być remedium na problemy które Rod Johnson (autor i twórca narzędzia) napotykał w swojej codziennej pracy konsultanta i programisty. Pamiętajmy, iż początek 21 wieku to okres ‘panowania’ architektury J2EE ze wszystkimi jest wadami i bolączkami, dla których alternatywą miał być właśnie Spring. Podstawowymi założeniami narzędzia było:
+
+* Skupienie się na obszarach które przez inne narzędzia traktują po macoszemu; platforma J2EE oferowała szereg doskonałych narzędzi w zakresie utrwalania (persistence), zdalnych wywołań (remoting), www (web frameworks). Jednakże integracja tych narzędzi była kwestią problematyczną. Spring oferował kompletne rozwiązanie umożliwiające połączenie różnych frameworków. 
+* Brak wymagań infrastrukturalnych. Aplikację opartą o Spring Framework od samego początku można było uruchomić na najzwyklejszej platformie Java - bez konieczności instalowania dodatkowych serwerów aplikacji. 
+* Łatwość użycia - w porównaniu z J2EE. Od samego początku Spring Framework po prostu działał, nie wymagając ponoszenia dodatkowych nakładów na konfigurację platformy. 
+* Testowalność, która między innymi wynika z paradygmatu POJO programming. Co więcej, w przeciewieństwie do większość serwerów aplikacji, Spring dostarczał narzędzia do testowania, umożliwiając zastępowanie pewnych elementów platformy namiastkami (ang. mock), dzięki czemu można było uruchomić aplikację bez konieczności wdrażania jej na środowisko testowe. Brak takiego wsparcia jest jednym z większych problemów na platformie JEE. Czasami można odnieść wrażenie, że w czasie projektowania i prac nad specyfikacja nikt nie pomyślał o sposobach testowanie tych rozwiązań, zostawiając problem w całości programistom i ich lepszym lub gorszym pomysłom. W przypadku Springa od pierwszych wydań widać pragmatyzm i doświadczenie autorów w zakresie testowania jednostkowego i integracyjnego.
+
+Spring stał się alternatywą dla J2EE, do działania nie wymagał zaawansowanych serwerów aplikacyjnych i mógł być z powodzeniem wdrażany przy użyciu lekkich kontenerów takich jak Tomcat i Jetty. Spring od samego początku zapewnił daleko idącą modularność; zależnie od wymagań biznesowych umożliwiał zastosowanie tylko niektórych elementów, bez konieczności instalacji i używania przeładowanych serwerów aplikacji (oferujących cały zestaw narzędzi zgodnych ze specyfikacją EJB). Budując prostą stronę internetową niekoniecznie będzie potrzeba używania kolejek JMS, natomiast wsparcie dla transakcji może okazać się bardzo przydatne. Serwery aplikacji z reguły monolityczne w swojej budowie byty, uniemożliwiające łatwe wyłączenie pewnych elementów - Spring pozwalał na to od samego początku. 
+
+Rozwój frameworku rozpoczął się od części obecnie znanej jako spring-mvc (implementacja wzorca Model View Controller) - stamtąd pochodzą najstarsze klasy narzędzia. Uważa się że to właśnie Spring jest protoplastą paradygmatu POJO programming - opisanego m.in. w książce Roda Johnsona: J2EE Development without EJB. Spring od lutego 2003 jest projektem otwartym (open-source).
+
+Początkowa alternatywność wobec rozwiązań opartych o EJB przestała mieć obecnie znaczenie. Platforma Spring i JEE od pewnego czasu zbliżają się do siebie, jeżeli chodzi o łatwość tworzenia aplikacji oraz w kwestii produktywności programistów (JEE6 jest tutaj kamieniem milowym) - Spring wciąż jawi się jako rozwiązanie daleko bardziej modularne i lżejsze. 
+
+
+		
+=== POJO Programming
+
+POJO to skrót od Plain Old Java Object, czyli obiekt który nie implementuje żadnych specyficznych interfejsów (np. tych związanych z platformą, z EJB 2.x), obiekty nie związane z jakimkolwiek środowiskiem, serwerem, frameworkiem (ang. framework agnostic). Jedyną i najważniejszą odpowiedzialnością takich obiektów jest przechowywanie danych i/lub realizacja usług (funkcjonalności) biznesowych. 
+
+Poza daleko większą czystością kodu, takie obiekty są w naturalny sposób oderwane od środowiska w którym mają zostać wdrożone. Dzięki temu do testowania aplikacji nie jest wymagany kontener (serwer aplikacji), niekonieczna jest także baza danych. Co więcej – tworzone klasy mogą być użyte poza główną aplikacją, umożliwiając łatwe współdzielenie kodu pomiędzy różnymi środowiskami.
+
+
+		
+=== Elementy frameworka
+
+Od samego początku Spring składał się z więcej niż jednego modułu. 
+
+Moduły to:
+
+* Kontener wstrzykiwania zależności, czyli zarządzanie komponentami, ich tworzeniem, wykorzystaniem i niszczeniem,
+* Kontekst aplikacyjny, będący warstwą abstrakcji umożliającą dostęp do zasobów dostarczanych przez serwer aplikacji,
+* Aspekty, wsparcie dla programowania aspektowego m.in. poprzez interceptory,
+* Zarządzanie transakcjami,
+* Abstrakcja warstwy dostępu do danych poprzez obsługę Hibernate, iBatis, JDBC Template i kilka innych pomocnych narzędzi,
+* Implementacja wzorca MVC (Model-Widok-Kontroler, ang. Model-View-Controller), generyczny framework webowy mogący działać niezależnie, integrując się z czystym JSP lub w połączeniu dowolnym innym narzędziem do generowania widoków (np. Velocity),
+* Obsługa zdalnych wywołań, poprzez web service, RMI.
+
+
+		
+=== Spring obecnie
+
+Na przestrzeni ostatnich 10 lat zmieniał się i rozwijał - tak jak rozwijały się technologie i inne narzędzie. Następował nie tylko rozwój samego frameworka, ale także szeregu narzędzi wspierających programistę. Rod Johnson od zawsze podkreślał że Spring oparty jest na trzech filarach: elastyczność (portability), efektywność (productivity) oraz innowacyjność (innovation). Niezmieniają się one na przestrzeni lat i pozostają aktualne zarówno w odniesieniu do pierwszych wersji narzędzia sprzed 10 lat, jak i wszystkich obecnych działań i inicjatyw SpringSource - czyli organizacji zajmującej się rozwojem frameworku. 
+
+Elastyczność na przestrzeni lat rozumiana była jako możliwość przenoszenia kodu aplikacji pomiędzy różnymi środowiskami (włącznie ze środowiskami testowymi): ta sama aplikacji działała poprawnie na różnych serwera aplikacji oraz w różnych kontenerach, gdzie Spring Framework stanowił warstwę abstrakcji oddzielającą aplikację od konkretnej implementacji środowiska. Przenaszalność aplikacji pomiędzy serwerami J2EE okazała się być iluzoryczna i odpowiednia abstrakcja dostarczana przez framework umożliwiała np. lokalne testowanie aplikacji w lżejszym środowisku niż docelowa platforma produkcyjna. Podobna sytuacja ma miejsce także obecnie, z tym że serwery aplikacji zostały zastąpione przez rozwiązania ‘w chmurze’ (cloud computing). Spring nadal pozostaje atrakcyjną warstwą abstrakcji, oddzielającą aplikację od specyficznych aspektów platformy (jak np. rozproszona baza danych).
+
+Efektywność początkowo rozumiana była poprzez zwolnienie programisty z konieczności użycia skomplikowanego modelu J2EE i zastąpieniem go zwinnym (lekkim) podejściem oferowanym przez Spring Framework (ang. lightweight). Natomiast w dniu dzisiejszym to przede wszystkim szerokie wsparcie dla programisty we wszystkich aspektach związanych z wytwarzaniem oprogramowania: 
+
+* Spring Roo do powtarzalnego generowania kodu aplikacji na przykład na podstawie bazy danych,
+* Zintegrowane środowisko programistyczne: Spring Tool Suite - narzędzie oparte o środowisko Eclipse lecz wychodzące daleko poza nie, dodając wsparcie dla szeregu narzędzi związanych ze Springiem.
+
+Od zawsze założeniem związanym ze Springiem było upraszczanie wszystkie co możliwe (make things simpler) - i to nie zmieniło się do dnia dzisiejszego. Chodzi przecież o to aby tworzyć oprogramowanie rozwiązujące konkretne problemy, dostarczające wartość dodaną, skupiać się na celach biznesowych a nie być rozpraszanym przez kwestie związane z serwerem aplikacji, bądź przez specyficzne aspekty platformy. 
+
+Na koniec innowacja, czyli przede wszystkim zaproponowanie nowego modelu POJO programming który z powodzeniem zastąpił mocno skomplikowane podejście znane z J2EE - z czasem podejście to zostało szerzej zaadaptowane i stało się także elementem specyfikacji EJB 3.x. SpringSource to obecnie także Groovy czyli jeden z funkcyjnych języków obecnych na platformie JVM oraz Grails (Groovy on Rails) - odpowiedź świata Javy na fenomen Ruby on Rails. Mogłoby się wydawać że są to już rzeczy bardzo subtelnie powiązane ze Spring Framework - nic bardziej mylnego. Omawiany framework jest kluczowym elementem każdego z tych rozwiązań i umiejętność posługiwania się nim leży u podstaw zrozumienia całego szeregu narzędzi dostarczanych przez SpringSource
+
+
+		
+=== Spring Framework a EJB
+
+Jak już podkreśliłem, Spring projektowany był jako alternatywa wobec EJB. Można jednak powiedzieć, że wraz z biegiem czasu Spring i EJB stały się rozwiązaniami komplementarnymi; każdy z frameworków ma swoje wady i zalety, wymusza pewne specyficzne decyzje architektoniczne. Spring z małego i lekkiego narzędzia rozrósł się o masę modułów i dodatków. Z kolei twórcy EJB dostrzegli ociężałość technologii i każde kolejne wydanie specyfikacji EJB powodowało, że platforma JEE stawała się lżejsza i elastyczniejsza. Nie da się jednak pominąć kilku istotnych różnic pomiędzy tymi dwoma technologiami:
+
+Modularność: Java Enterprise Edition (czyli platforma, która wykorzystuje EJB jako komponenty biznesowe) jest całością i nie ma możliwości skorzystania tylko z niektórych elementów. JEE łączy się z konkretnym zestawem API z których należy korzystać: EJB (komponenty), JPA (dostęp do bazy danych), JMS (kolejny, asynchroniczność), JSF (warstwa prezentacji). Co więcej, wszystkie te elementy są obecne w każdym serwerze aplikacji zgodnym z JEE, nawet jeżeli rozwiązanie które budujemy nie ma potrzeby z nich korzystać. 
+
+Podejście Spring'owe jest diametralnie inne; Spring umożliwia dowolne łączenie narzędzi i bibliotek. Nacisk stawiany jest na ograniczenie ilość wykorzystywanych modułów, które włączane są do aplikacji dopiero gdy zachodzi taka potrzeba. Co więcej, Spring nie wymusza korzystania z konkretnego API i pozostawia dowolność programiście (architektowi). Nie ma znaczenie czy dostęp do bazy danych zostanie zrealizowany poprzez JPA (Hibernate) czy poprzez iBatis lub z wykorzystaniem bezpośredniej komunikacji po JDBC. 
+
+Częstotliwość zmian: Spring żyje, nowe wersje biblioteki pojawiają się z dużą regularnością; rozwojem frameworka zarządza jedna firma: SpringSource i ona jest odpowiedzialna za to jakie nowe elementy pojawiają się w narzędziach. Wciąż jednak framework, jako taki, pozostaje narzędziem o otwartym kodzie źródłowym, opartym na otwartej licencji
+
+Alternatywnie, specyfikacja EJB rodzi się w bólach, nowe wersje pojawiają się raz na kilka lat. Przez ten czas programiści zmuszani są do korzystania z rozwiązań coraz bardziej archaicznych lub zaczynają korzystać z rozszerzeń oferowanych przez poszczególnych producentów serwerów aplikacji (ang. verndor specific extensions). Powoduje to jednak przywiązanie do konkretnego producenta / serwera aplikacji. Czasem nawet do konkretnej wersji serwera. 
+
+Przenaszalność: Spring jest całością samą w sobie, decydując się na użycie tego frameworka, używamy także dostarczanego przez Spring kontenera – pomostu pomiędzy aplikacją a serwerem (środowiskiem) gdzie aplikacja jest uruchamiana. W przypadku EJB sprawa jest bardziej skomplikowana. Oparcie platformy JEE o szereg standardów pozwalało (w teorii) na dowolne przenoszenie aplikacji pomiędzy serwerami aplikacji dostarczanymi przez różnych producentów. W praktyce jednak (co podkreśliłem już w poprzednim punkcie), specyfikacja pozostawiła stosunkowo szerokie pole niedookreślenia, pozostawiając dużą dowolność producentom serwera. Poprzez to niezmiernie ciężko spotkać aplikację niezależną od tzw. vendor extensions, czyli elementów ściśle zintegrowanych z konkretnym serwerem aplikacji. 
+
+Podstawowym wnioskiem płynącym z takiego porównania jest to że te same wymagania jesteśmy w stanie zrealizowań zarówno wykorzystując EJB (platformę JEE) oraz Springa (wraz z otaczającymi modułami). Spring oferuje bogactwo opcji, a co za tym idzie konieczność podejmowania szeregu decyzji projektowych, decyzji wymagających doświadczenia oraz praktyki. Natomiast w przypadku EJB zmuszenia jesteśmy do skorzystania z konkretnego zestawu narzędzi; jeżeli te narzędzia są odpowiednie do naszych potrzeb – tym lepiej, nie mamy bowiem możliwości zmian. Z powodu takiej a nie innej konstrukcji platformy, zwolnieni zostaliśmy z konieczności podejmowania szeregu nietrywialnych decyzji projektowych i zaistniałą sytuację musimy zaakceptować taką jak jest.
+
+
+		
+=== Program szkolenia
+
+Tak jak już pisałem, Spring Framework stanowi rdzeń wszystkich rozwiązań dostarczanych przez SpringSource. Dodatkowo, sam w sobie, jest bardzo potężnym narzędziem do tworzenia aplikacji w języku Java. W niniejszym szkoleniu skupimy się na najważniejszych aspektach frameworku, które zostaną podzielone na następujące moduły:
+
+* Głównym elementem Spring Framework jest kontener który realizuje proces wstrzykiwania zależności (odwrócenie kontroli - ang. Inversion of Control). W jaki sposób uruchomić kontener, jak go skonfigurować, dodać komponenty i w jaki sposób opisać zależności pomiędzy komponentami: poprzez adnotacje, poprzez konfigurację w pliku XML lub popraz skrypt konfiguracyjny. 
+
+Komponenty dodane do kontenera są przez niego zarządzanie. Omówiony zostanie cykl życia komponentów; w jaki sposób komponenty są tworzone, zarządzane, w jaki sposób programista może wpłynąć na poszczególne działania kontenera.
+
+* W kolejnej części dokładniej zostanie umówione wstrzykiwanie zależności. Jest to jeden z istotniejszych elementów Spring dlatego warto poświęcić więcej uwagi i dokładnie przeanalizować sposoby budowania zależności, różnych możliwości tworzenia obiektów itd.
+* Aplikacje wymagają sprawdzenia poprawności wprowadzanych danych (walidacji). Spring w tym zakresie implementuje jeden ze standardów Javy (JSR-303); dokładnie zostanie omówione jak działa walidacja, w jaki sposób ją skonfigurować i wykorzystać w aplikacji.
+* Kluczowym elementem większości systemów informatycznych jest baza danych. W tej kwestii Spring nie odkrywa koła na nowo (nie narzuca jakiegokolwiek, własnego sposobu komunikacji z bazą danych) tylko umożliwia połączenie poprzez najchętniej przez nas wykorzystywane narzędzie; czy to Hibernate, czy iBatis, czy bezpośrednie JDBC. W kolejnym module przyjrzymy się dokładnie w jaki sposób powinno to zostać zrealizowane w aplikacji opartej o Spring Framework
+* Kolejny moduł będzie dotyczył już tematów trudniejszych, rzadziej spotykanych - mianowicie aspekty; deklaratywne rozbudowywanie elementów systemu o dodatkowe funkcjonalności, bez konieczności ingerencji w sam kod klasy / moduły. Programowanie w oparciu o aspekty jest nagminnie wykorzystywane w projektowaniu i budowie szeregu narzędzi i frameworków - rzadziej spotyka się je w codziennych projektach. Spring niejako wprowadził te zagadnienia pod strzechy i bardzo mocno ułatwił ich użycie. W tym modelu przyglądniemy się jak konfigurować i używać aspektów.
+* Przez całe szkolenie komunikowaliśmy się z naszą aplikacją poprzez zwykły interfejs tekstowy, poprzez konsolę. Nie jest to oczywiście jedyny sposób; Spring oferuje cały szereg narzędzi umożliwiających publikację aplikacji biznesowej poprzez jeden lub wiele przyjaznych kanałów. W module pokażę w jaki utworzyć aplikację WWW, z wykorzystaniem dostarczanego przez Spring narzędzia Spring MVC lub co zrobić aby wykorzystać alternatywny framework jak np. Struts czy JSF. Równie łatwo komponenty biznesowe opublikować jako web service - i to także zostanie pokazane w module. 
+* Na sam koniec, choć w zasadzie od tego należałoby zacząć, omówimy sposoby pisania testów jednostkowych. Jak już zaznaczyłem na samym początku, Spring stanowi doskonałą abstrakcję oddzielającą moduły biznesowe od specyficznych aspektów platformy na której aplikacja jest wdrażana. Dzięki tej abstrakcji nie ma najmniejszych problemów aby platformą wdrożenia były narzędzia do testów jednostkowych. Dodatkowo, paradygmat POJO programming nie wymusza implementacji specyficznych interfejsów, dostarczanych przez platformę (jak miało to miejsce w EJB 2.x) i poprzez to znakomicie ułatwiał testowanie. 
+
+
+		
+=== Środowisko programistyczne
+
+Wszystkie przykłady zaprezentowane w niniejszym szkoleniu zostały stworzone przy użyciu Spring Tool Suite - czyli środowiska opartego o platformę Eclipse, dostarczanego przez SpringSource. Wszystkie przykłady z powodzeniem będą działać w dowolnym innym środowisku, przy czym nieocenioną zaletą STS jest szereg ułatwień związanych z frameworkiem - na przykład gotowe już wzorce dla szeregu aplikacji opartych o Spring Framework. Wykorzystamy tę właściwość aby rozpocząć pierwszy projekt; tworząc nowy “Spring Template Project”. Z szeregu dostępnych wzorców wybieramy najprostszy: Sample Spring Utility Project, który będzie zawierał dwa, najważniejsze z naszego punktu widzenia, elementy: spring-context (czyli kontekst aplikacyjny) oraz spring-test (czyli zestaw narzędzi do testowania aplikacji). Co więcej - tak utworzony projekt jest w pełni funkcjonalną aplikację Spring Framework.
+
+
+		
+=== W kolejnym module...
+
+Mam nadzieję, że powyższe wprowadzenie zarysowało jakiego typu narzędziem jest Spring framework i jakie może być jego zastosowaniem. W kolejnej części pokażę jak rozpocząć pracę z frameworkiem, jak utworzyć projekt, uruchomić, przedstawię podstawowe kroki potrzebne do napisania aplikacji opartej o Springa.
+
+
+
+== Moduł 2: Kontener Spring
+
+		
+=== Hello Spring!
+
+Sercem Spring Framework jest kontekst aplikacyjny, który umożliwia m.in. wstrzykiwanie zależności, programowanie z wykorzystaniem aspektów, wsparcie dla transakcji, pamięci podręcznej (cache), walidacji, nieskomplikowany framework webowy spring-mvc oraz szereg narzędzi do testowania aplikacji. Sam kontekst to podstawa dla szeregu bibliotek dostarczanych zarówno przez Spring Source (Spring Security, Spring Integration, Spring Web Services itd.) jak i przez niezależnych dostawców (Apache CXF). 
+
+Kontener to nietrywialna fabryka komponentów, które są zdeklarowane i wykorzystywane w tworzonej aplikacji. Komponenty mogą od siebie zależeć, mogą wykorzystywać różne zasoby systemowe (system plików, pliki konfiguracyjne, bazy danych), mogą być powoływane do życia i niszczone zależnie od potrzeb - wszystkim tym zarządza Spring. 
+
+
+		
+=== Utworzenie kontekstu
+
+Kontekst powołujemy do życia poprzez utworzenie pliku XML zawierającego następujące elementy: 
+
+
+
+[source, java]
+----          	
+			<?xml version="1.0" encoding="UTF-8"?><beans xmlns="http://www.springframework.org/schema/beans"xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"xmlns:context="http://www.springframework.org/schema/context"xsi:schemaLocation="http://www.springframework.org/schema/beans             
+----   
+
+http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+
+[source, java]
+----          	
+			http://www.springframework.org/schema/context             
+----   
+
+http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+[source, java]
+----          	
+			<context:component-scan base-package="pl.devcastzone.spring.*" />	</beans>            
+----   
+
+Jeżeli utworzyliśmy projekt wykorzystując jeden z wzorców oferowanych przez środowisko STS, to taki plik został już utworzony w katalogu `src/main/resources/META-INF/spring/app-context.xml`
+
+Najistotniejsza linijka w tym pliku: `<context:component-scan base-package="pl.devcastzone.spring.*" />` informuje kontener, że wszystkie komponenty są zadeklarowane w pakiecie pl.devcastzone.spring i klasy tam znajdujące się należy przeskanować w poszukiwaniu odpowiednich adnotacji. 
+
+Jest to w zasadzie wystarczająca konfiguracja, aby rozpocząć pracę ze Springiem. Nie jest to jednak jedyna możliwość konfigurowania aplikacji. Poza skanowaniem pakietów (czyli konfiguracją pokazaną na przykładzie powyżej) można także ręcznie zadeklarować wszystkie komponenty w pliku XML lub w osobnej klasie konfiguracyjnej JavaConfig. Każda z tych metod zostanie omówiona w dalszej części modułu - tam też zostaną opisane wady i zalety każdego z rozwiązań. Na początek, aby skupić się na samym procesie tworzenia komponentów, pozostaniemy przy automatycznym ich wyszukiwaniu. 
+
+Aby uruchomić taką najprostszą aplikację Spring, należy utworzyć nową klasę w utworzony zostanie kontekst aplikacji:
+
+
+
+[source, java]
+----          	
+			package 	pl.devcastzone.spring;            
+----   
+
+
+
+[source, java]
+----          	
+			import 	org.springframework.context.support.AbstractApplicationContext;import 	org.springframework.context.support.ClassPathXmlApplicationContext;import 	pl.devcastzone.spring.example001.ExampleService;public 	class App {	public static void main(String[] args) {AbstractApplicationContext context =	new ClassPathXmlApplicationContext("META-INF/spring/app-context.xml");}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+Oczywiście nic się nie wydarzyło, ponieważ poza samym kontenerem, nie zostały zdefiniowane żadne komponenty, utworzona aplikacja nie realizuje jeszcze żadnych usług. 
+
+
+		
+=== Komponenty
+
+Aby poprawnie zdefiniować komponent wystarczy oznaczyć klasę komponentu adnotacją `@Component`. Spring, podczas skanowania pakietów, automatycznie rozpozna klasę i dołączy jej instancję do kontekstu. W zasadzie na tym można by poprzestać, ponieważ tą jedną, ogólną adnotacją można poprawnie zbudować całą aplikację. Jednakże Spring oferuje kolejne trzy, bardziej specyficzne adnotacje: `@Resource`, `@Service` i `@Controller`. Zależnie od kontekstu użycia, można oznaczyć klasy innymi adnotacjami, na przykład w odniesieniu do bazy danych `(@Resource`), serwisów `(@Service`) lub kontrolerów webowych `(@Controller`). Zasada działania wszystkich adnotacji jest taka sama, jednakże odpowiednie ich użycie sugeruje pewien dodatkowy kontekst oraz umożliwia elastyczniejszą i łatwiejszą konfigurację np. aspektów. Warto zauważyć że nie ma konieczności stosowania dodatkowych interfejsów (jak to ma miejsce w przypadku wielu innych frameworków). Wszystkie dodatkowe usługi kontenera (transakcje, logowanie, aspekty) mogą z powodzeniem zostać dodane do zwykłych klas. Dlatego komponent w najprostszej postaci może wyglądać następująco:
+
+
+
+[source, java]
+----          	
+			@Componentpublic 	class ExampleService {	public String getMessage() {	return "Hello world!";}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+Tak utworzone komponenty możemy ze sobą łączyć (wstrzykiwać) z wykorzystaniem adnotacji `@Autowired` (org.springframework.beans.factory.annotation.Autowired). Niezależnie czy adnotacją oznaczymy pole klasy, modyfikator (getter / setter), konstruktor - Spring będzie w stanie poprawnie powiązać ze sobą komponenty. Dla porządku i dla zachowania pewnej przejrzystości i konwencji - w niniejszym szkoleniu komponenty będziemy łączyć poprzez adnotację na atrybutach klasy. Wybór jednej z metod nie ma wpływu na sposób działania aplikacji, jednakże ze względu na czystość i jakość kodu dobrze jest trzymać się przyjętej i jednolitej konwencji. 
+
+Począwszy od wersji 3.0 Spring, pojawiły się dodatkowe możliwość konfiguracyjne - pojawiła się także możliwość łączenia komponentów (wstrzykiwania) poprzez adnotację `@Inject` oraz deklarowania komponentów poprzez adnotację `@Named`. Te nowości wynikają m.in. z faktu, że po wielu latach kwestie wstrzykiwania zależności (Inversion of control) doczekały się własnej specyfikacji (JSR 330 - Dependency Injection for Java) której głównym autorem był Rod Johnson - autor Springa. Nie jest zatem zaskakujące, że Spring Framework w całości implementuje tę specyfikację, dodając do istniejących już adnotacji, kilka nowych wynikających ze standardu. 
+
+Komponent utworzony zgodnie z JSR 330 będzie wyglądał następująco:
+
+
+
+[source, java]
+----          	
+			package 	pl.devcastzone.spring.example001;            
+----   
+
+
+
+[source, java]
+----          	
+			import 	javax.inject.Named;@Namedpublic 	class ExampleService {	public String getMessage() {	return "Hello world!";}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+Jego wstrzyknięcie odbędzie się natomiast poprzez adnotację javax.inject.Inject:
+
+
+
+[source, java]
+----          	
+				@InjectExampleService exampleService;            
+----   
+
+Standardowe adnotację `(@Named` i `@Inject`) są zdecydowanie uboższe od swoich odpowiedników dostępnych w Springu. Z drugiej jednak strony, gwarantują przenaszalność kodu pomiędzy różnymi kontenerami wstrzykiwania zależności, takimi jak Spring, Google Guice lub CDI (Context and Dependency Injection - będącego elementem platformy JEE6). Wsparcie dla podstawowych adnotacji umożliwia łatwe tworzenie modułów, które mogą być używane poza aplikacją napisaną w Springu – na przykład narzędzia, które będę współdzielone pomiędzy kilka projektów, bez konieczności korzystania z frameworku Spring. 
+
+
+		
+=== Komponenty bezstanowe
+
+Koncepcja komponentów nie jest nowa, nie pojawiała się wraz ze Springiem – jest dobrze znana chociażby ze specyfikacji EJB. Jednakże w Springu temat podjęto w nieco innym ujęciu. W przywołanym EJB wyróżniamy 2 zasadnicze typy komponentów: stanowe i bezstanowe, które tworzone są i niszczone zależnie od potrzeb (np. od obciążenia systemu). W Springu natomiast wszystkie komponenty nie podlegają zarządzaniu w oparciu o pulę – zostało to rozwiązanie w zupełnie inny z wykorzystaniem zakresów (ang. bean scope). Każda klasa jest pewnym 'przepisem na komponent', jest jego wzorcem, jednak dopiero konkretna konfiguracja definiuje sposób tworzenia instancji komponentu. W przypadku ogólnym, w aplikacji istnieje tylko jednak instancja każdego komponentu (taka jest domyślna konfiguracja zalecana przez Spring). Niemniej jednak, każdy utworzony komponent może występować w jednym z kilku dostępnych zakresów (lub też w dowolnym innym utworzonym przez programistę). Na etapie budowy komponentów biznesowych aplikacji to najbardziej interesujące są dwa zakresy: singleton oraz prototype. 
+
+Jak już pisałem, domyślnym zakresem jest singleton, który powoduje, że tylko jedna instancja klasy istnieje w kontenerze. Instancja ta jest przetrzymywana w podręcznej pamięci i wszystkie odwołania do komponentu są realizowane przez tę jedną instancję. Implikuje jedną, bardzo istotną rzecz z punktu widzenia architektury komponentów: jeżeli istnieje tylko jedna instancja danej klasy, to pod żadnym pozorem komponent taki nie może przechowywać wewnętrznego stanu, komponent musi być bezstanowy. Jeżeli wywołanie którejś z metod zmieni wewnętrzny stan obiektu, ta zmiana będzie widoczna także dla innych wywołań – nie tylko kolejnych wywołań w obrębie relacji pomiędzy dwiema instancjami, ale dla każdego kolejnego requestu w obrębie aplikacji (np. pochodzącego od innego użytkownika). To z kolei może to prowadzić do niedeterministycznego zachowania się komponentu. 
+
+Warto nadmienić, że nie jest to singleton w rozumienia wzorców projektowych Gang of Four. Framework nie narzuca specjalnej konstrukcji obiektu, a decyzja o tym czy instancja jest singletonem, czy niepodejmowana jest w momencie tworzenia kontekstu. 
+
+Alternatywą wobec pojedynczej instancji klasy w kontekście jest zakres prototype. Oznaczenie komponentu w ten sposób powoduje utworzenie nowego obiektu wraz z każdym wywołaniem; niezależnie czy komponent pobierany jest jawnie z kontekstu, czy wstrzykiwany do innego komponentu, zawsze tworzona jest nowa instancja. W związku z tym, tak zadeklarowane komponenty nadają się do przechowywania stanu (mogę funkcjonować jako komponenty stanowe). W przypadku komponentów niebędących singletonami rola kontenera ogranicza się jedynie do utworzenia obiektu. Nie są natomiast wywoływane którekolwiek metody związane z niszczeniem instancji (a co za tym idzie np. proces zwolnienia zasobów leży po stronie klienta komponentu). 
+
+Framework oferuje także cztery dodatkowe zakresy: thread (jak sama nazwa wskazuje ograniczający 	dostęp do komponentu do jednego wątku) oraz trzy zakresy wykorzystywane w aplikacjach webowych, bezpośrednio związane z sesją HTTP: request, session oraz global session. Dobrą analogią dla zakresu thread jest znany z Javy SE obiekt ThreadLocal, będący swego rodzaju pamięcią podręczną dostępną tylko dla jednego wątku. 
+
+
+		
+=== Konfiguracja kontekstu
+
+Wróćmy do pliku `app-context.xml`, który został utworzony na samym początku. Aby aplikacja zadziałała, wystarczył prosty wpis nakazujący skanowanie pakietów oraz określenie które ścieżki mają być skanowane. Całość konfiguracji odbyła się w sposób automatyczny. Przeskanowane zostały pakiety aplikacji w poszukiwaniu adnotacji, które są rozpoznawane przez framework: `@Component`, `@Repository`, `@Service` oraz `@Controller`. O ile w podstawowym przykładzie sprawdza się to doskonale, to przy bardziej rozbudowanych projektach lepiej mieć kontrolę nad tym, jakie elementy projektu są skanowane. W praktyce warto ograniczyć zakres skanowania aplikacji do konkretnych pakietów, uzupełniając atrybuty base-package o kolejne pakiety, oddzielone przecinkami.Dodatkowo istnieje możliwość rozbudowanego filtrowania co zostanie przeskanowane; poprzez użycie tagów include-filter oraz exclude-filter można regulować czy konkretne klasy zostaną dołączone do projektu. Automatyczna konfiguracja może na przykład dotyczyć tylko klas oznaczonych odpowiednimi adnotacjami (np. stereotypami dostarczanymi przez framework jak `@Component`), klas rozszerzających wybrany przez nas typ bazowy lub implementujących interfejs aż po bardzo elastyczne włączenie klas, których nazwa odpowiada zapisanemu w konfiguracji wyrażeniu regularnemu. Posłużywszy się naszym przykładem, jeżeli konfigurację zapiszemy w następujący sposób, żaden komponent nie zostanie włączony do kontekstu, ponieważ wyłączone zostaną wszystkie klasy których nazwa kończy się na Service
+
+[source, java]
+----          	
+				<context:component-scan base-package="pl.devcastzone.spring.*">	<context:exclude-filter type="regex" expression=".*Service"/>	</context:component-scan>             
+----   
+
+Przedstawiona konfiguracja kontekstu jest możliwie najprostsza (minimalna) i budowa aplikacji, czyli powiązań pomiędzy komponentami, odbywa się automatycznie. Mają wtedy zastosowanie konwencje programistyczne zalecane przez Spring, a niewyrażona explicite konfiguracja (ang. convention over configuration). Takie podejście sprawdza się doskonale na wczesnych etapach budowy aplikacji, kiedy częstotliwość zmian jest bardzo duża i sam projekt mocno ewoluuje. Programowanie z zastosowaniem konwencji powoduje, że wiele rzeczy dzieje się automatycznie (automagicznie) co daje bardzo dużą elastyczność i pozwala skupić uwagę na realizacji wymagań biznesowych, a nie na pisaniu kodu konfiguracyjnego (tzw. boilerplate code). Alternatywą wobec konwencji jest konfiguracja deklaratywna (zapisana explicite w plikach XML). 
+		
+=== Konfiguracja deklaratywna
+
+Wykorzystywana dotychczas konfiguracja poprzez adnotacje pojawiła się w Springu 2.5 (od momentu, gdy Spring zaczął wykorzystywać Java5). Jednak, historycznie rzecz ujmując, podstawową konfiguracją aplikacji wykorzystujących Spring Framework były pliki XML. To, co dotychczas działo się automatycznie, można z powodzeniem utworzyć w sposób deklaratywny z wykorzystaniem następującego pliku konfiguracyjnego:
+
+
+
+[source, java]
+----          	
+			<?xml version="1.0" encoding="UTF-8"?><beans xmlns="http://www.springframework.org/schema/beans"xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"xmlns:context="http://www.springframework.org/schema/context"xsi:schemaLocation="http://www.springframework.org/schema/beans             
+----   
+
+http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+
+[source, java]
+----          	
+			http://www.springframework.org/schema/context             
+----   
+
+http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+[source, java]
+----          	
+				<bean class="pl.devcastzone.spring.example001.ExampleService" /></beans>            
+----   
+
+Analogicznie do konfiguracji XML, konfiguracja aplikacji może sie odbywać poprzez użycie odpowiednio przygotowanej klasy Java. Z jednej strony jest to wciąż konfiguracja deklaratywna, nic nie dziej sie automatycznie - analogicznie do przykładu opartego o XML. Z drugiej strony (co może być zarówno zaleta jak też wada) kompilator juz na etapie stworzenia klasy sprawdza poprawność typów. W przypadku plików XML odbywa sie to dopiero w momencie uruchamiania konfiguracji - dopiero wtedy sprawdzane są np. literówki. Konfiguracja JavaConfig dla naszego prostego przykładu wyglądałaby następująco:
+
+
+
+[source, java]
+----          	
+			package 	pl.devcastzone.spring;            
+----   
+
+
+
+[source, java]
+----          	
+			import 	org.springframework.context.annotation.Bean;import 	org.springframework.context.annotation.Configuration;import 	pl.devcastzone.spring.example001.ExampleService;@Configurationpublic 	class AppConfig {	@Bean	public ExampleService service() {	return new ExampleService();}}            
+----   
+
+Jeżeli decydujemy się na korzystanie z konfiguracji JavaConfig, zmienia się wtedy nieznacznie sposób budowania kontekstu aplikacji: zamiast klasy `ClassPathXmlApplicationContext` (jak w poprzednich przykładach) korzystamy z klasy `AnnotationConfigApplicationContext`, gdzie jako parametr konstruktora podajemy klasę konfiguracyjną. 
+
+Różnice i podobieństwa poszczególnych konfiguracji zostaną dokładnie omówione w kolejnych modułach; w jakich sytuacjach użycie poszczególnych konfiguracji jest najodpowiedniejsze oraz jakie konsekwencje niesie wybranie każdego z podejść. 
+
+
+		
+=== Cykl życia komponentów
+
+Niezależnie od sposobu, w jaki będzie konfigurowana aplikacja (automatyczne skanowanie, pliki XML, klasy konfiguracyjne) wszystkie tworzone komponenty podlegają takim samym prawom i zarządzane są przez kontener na analogicznych zasadach. Jak już podkreśliłem podczas omawiania zakresu komponentów, pojedyncze instancje klas (singletony) podlegają pełnemu cyklowi życia, natomiast w przypadku komponentów oznaczonych jako prototype kontener odpowiada tylko i wyłącznie za utworzenie instancji klasy. Jako, że jest to funkcjonalność dostępna we frameworku od samego początku, więc podobnie jak omówiona powyżej konfiguracja ewoluowała z biegiem czasu. 
+
+Obecnie, najpopularniejszą metodą połączenia komponentu ze zdarzeniami kontenera jest użycie adnotacji `@PostConstruct` i `@PreDestroy`. Adnotacje pojawiły się wraz z Java 5 i są opisane w JSR 250: Common Annotations for the Java Platform. 
+
+
+
+[source, java]
+----          	
+			@Namedpublic 	class ExampleService {	@PostConstruct	public void startup() {	System.out.println("Preparing the message...");}	public String getMessage() {	return "Hello world!";}	@PreDestroy	public void shutdown() {	System.out.println("...finishing.");}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+Po wywołaniu takiego komponentu, następujące wpisy pojawią się w konsoli:
+
+
+
+[source, java]
+----          	
+			Preparing the message...Hello world!...finishing.            
+----   
+
+Nie jest to oczywiście jedyny sposób, jednakże że względu na brak jawnego połączenia komponentu z frameworkiem, wydaje się być najodpowiedniejszy. Ten sam komponent, z tak samo oznaczonymi metodami, mógłby zostać także użyty w aplikacji opartej o inny framework Dependency Injection i (lub) też jako element aplikacji JEE. Idea wywołania metod związanych z cyklem życia pozostaje taka sama. 
+
+W starszych wersjach frameworka, analogiczne zachowanie można było osiągnąć poprzez implementację specyficznych dla Spring interfejsów (był to jedyny sposób w czasach sprzed adnotacji, czyli np. Spring 1.0). Implementując interfejsy `InitializingBean` oraz `DisposableBean`, wymuszana jest implementacja metod `afterPropertiesSet()` oraz `destroy()`. Zaprezentowany powyżej komponent przymnie wówczas następującą postać:
+
+
+
+[source, java]
+----          	
+			@Namedpublic 	class ExampleService implements InitializingBean, DisposableBean {	public void afterPropertiesSet() throws Exception {	System.out.println("Preparing the message...");}	public String getMessage() {	return "Hello world!";}	public void destroy() throws Exception {	System.out.println("...finishing.");}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+Aby uniknąć bezpośredniego powiązania komponentu z frameworkiem (a tutaj ma to miejsce poprzez implementację specyficznych dla Springa interfejsów), metody związane z cyklem życia można zadeklarować w pliku konfiguracyjnym XML. Jeżeli zatem utworzony komponent będzie wyglądał następująco:
+
+
+
+[source, java]
+----          	
+			public 	class ExampleService {	public void afterPropertiesSet() throws Exception {	System.out.println("Preparing the message...");}	public String getMessage() {	return "Hello world!";}	public void destroy() throws Exception {	System.out.println("...finishing.");}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+Aby metody związane z cyklem życia zostały wywołane, konfiguracja w pliku XML musi wyglądać następująco:
+
+
+
+[source, java]
+----          	
+				<bean class="pl.devcastzone.spring.example001.ExampleService" 	init-method="afterPropertiesSet"	destroy-method="destroy"	/>            
+----   
+
+Jak widać na powyższym przykładzie (a także na wcześniejszych przykładach konfiguracyjnym), Spring jest frameworkiem niezwykle elastycznym, gdzie każda czynność może być wykonana na co najmniej kilka sposobów. Dla niektórych osób jest to zaleta, podczas gdy inny postrzegają to jako wadę. Niewątpliwie, wymaga to znacznie większej wiedzy i doświadczenia, połączonego często z umiejętnością holistycznego spojrzenia na problem, gdyż nie ma tutaj jedynie słusznej drogi dojścia do rozwiązania problemów projektowych. 
+
+
+		
+=== Zasoby i wykorzystanie @Resource
+
+Reagowanie na zdarzenia związane z utworzeniem komponentu i (lub) usuwaniem komponentu z kontekstu to najczęstszy przypadek użycia metod związanych z cyklem życia. Niemniej jednak, nie są to jedyne możliwość współpracy pomiędzy komponentem a kontenerem. W przeciwności np. do platformy JEE, Spring oferuje także szereg interfejsów niebędących bezpośrednio powiązanych z cyklem życia komponentu (z jego tworzeniem oraz niszczeniem) ale umożliwiających komponentowy 'odnalezienie się' w kontekście aplikacji. Mam tutaj na myśli Aware interfaces, czyli interfejsy łączące komponent z zasobami dostarczanymi przez framework (`ApplicationContext`, `BeanFactory`, `MessageSource`). Począwszy od wersji 2.0, Spring umożliwia także bezpośrednie wstrzykiwanie elementów frameworka, wykorzystując adnotację `@Resource`. Tak więc poniższe dwie klasy są równoważne co do funkcjonalności:
+
+
+
+[source, java]
+----          	
+			@Namedpublic 	class ExampleService {	@Resource	ApplicationContext ctx;	@PostConstruct	public void setup() {	System.out.println("Context started: " 	+ new Date(ctx.getStartupDate()));}	public String getMessage() {	return "Hello world!";}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+
+
+[source, java]
+----          	
+			@Namedpublic 	class ExampleService implements ApplicationContextAware {	ApplicationContext ctx;	public void setApplicationContext(ApplicationContext applicationContext)	throws BeansException {	this.ctx = applicationContext;}	@PostConstruct	public void setup() {	System.out.println("Context started: " 	+ new Date(ctx.getStartupDate()));}	public String getMessage() {	return "Hello world!";}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+
+		
+=== W kolejnym module...
+
+Przedstawione tutaj przykłady były stosunkowo podstawowe, ale dość dobrze opisują podstawowe elementy, z których składa się aplikacja oparta o Spring Framework oraz w jaki sposób łączyć te elementy ze sobą. W kolejnej części rozwinę temat wstrzykiwania zależności, opisując bardziej skomplikowane zagadnienie przy okazji budowania bardziej skomplikowanej aplikacji niźli proste „Hello World”. 
+
+
+
+== Moduł 3: Wstrzykiwanie zależności
+W poprzednim module omówiłem sposób tworzenia i konfiguracji kontekstu oraz w jaki sposób deklarować komponenty. Były to bardzo proste przykłady, ale oddawały naturę rzeczy. Posiadając tę podstawową wiedzę można przystąpić do budowania bardziej skomplikowanych aplikacji. Nim jednak do tego przejdziemy, należy omówić w jaki sposób Spring rozwiązuje zależności pomiędzy komponentami. 
+
+Istotna uwaga; w kolejnych przykładach całość konfiguracji odbywać się będzie poprzez adnotacje i rola plików konfiguracyjnych zostanie sprowadzona do niezbędnego minimum. Wynika to z faktu, iż nieustanne przenoszenie uwagi pomiędzy kod Javy a pliki konfiguracyjne XML może zaciemniać obraz – szczególnie w początkowej fazie nauki. Tworząc niniejsze szkolenie, wyszedłem z założenia, że najpierw należy poznać zasadę działania i mechanizmy frameworka, a dopiero w kolejnym kroku analizować alternatywne sposoby konfigurowania aplikacji. W jednym z ostatnich rozdziałów zrobię przegląd całego szkolenia i wszystkie konfiguracje automatyczne przepisane zostaną na XML. Wtedy też zostaną podkreślone różnice pomiędzy konfiguracjami oraz omówione ogólne zalecenia kiedy z jakiego podejścia korzystać. 
+
+Co więcej, ze względu na wspomniany już początek nauki, wszystkie przykłady nie wykraczały poza podstawowe „Hello World”. Fragmenty programów miały na celu pokazać podstawowe zasady budowania aplikacji, dać posmak różnorodności i elastyczności frameworka. Nie oznacza to oczywiście, że wszystkie przykłady szkolenia będą się ograniczać do trywialnych – już w tym module zacznę pokazywać jak realizować konkretne wymagania biznesowe, aby szkolenie nie było oderwane od rzeczywistości. 	
+		
+=== Łączenie komponentów
+
+W poprzedniej części analizowaliśmy jak utworzyć komponent, jakie publiczne metody komponentu mogą zostać wywołane przez kontener w momencie inicjacji klasy. Na prostych przykładach pokazane zostało w jak komponenty można ze sobą łączyć. Wróćmy zatem do wiedzy z poprzedniego modułu i utwórzmy nowy komponent. Aby osadzić nasze rozważania w szerszym kontekście, tworzone przez nas komponenty są elementem większego systemu, który będzie powstawał wraz z rozwojem szkolenia. Będzie to aplikacja do zarządzania zadaniami, czyli tzw. to-do. Prosta (z początku) aplikacja umożliwiająca przeglądanie i dodawanie zadań, układanie ich w pewien mini harmonogram – jest tematyka ogólnie znana, niewymagająca jakiegokolwiek wprowadzenia biznesowego, zatem idealna na przykład. 
+
+[source, java]
+----          	
+			@Componentpublic 	class TasksService {	List<Task> tasks = new ArrayList<Task>();	public void addTask(Date startDate, 	int duration, String title,String description) {            
+----   
+
+
+
+[source, java]
+----          	
+				tasks.add(new Task.Builder().withTitle(title).withDescription(description).withDate(startDate).withDuration(duration).build());}            
+----   
+
+
+
+[source, java]
+----          	
+				public List<Task> getTasks() {	return tasks;}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+Jest to niezmiernie naiwna implementacja listy zadań, przechowująca listę w pamięci. Z czasem jednak, będzie ona rozbudowywana, a póki co będzie służyć jako baza do dalszych rozważań. Należy tutaj przypomnieć o czym pisałem w poprzednim module: każdy serwis zarządzany przez Spring jest singletonem, tzn. istnieje tylko jedna instancja danego komponentu w kontekście. Oznacza to że wszystkie serwisy korzystające z komponentu TaskService będą miały dostęp do tej samej listy zadań. W ogólnym przypadku (np. wielowątkowej aplikacji webowej) byłby to niewybaczalny błąd, jednakże w przykładowej aplikacji możemy wykorzystać tę właściwość, umożliwiając komponentowi przechowywanie danych. Sam serwis dodający zadania to jednak mało; projektując aplikację najbardziej zależy nam na możliwości przeglądania dodanych zadań – potrzeba do tego metody wyświetlającej zadania, np. na ekran. Podskórnie jednak czujemy, że dodanie takiej metody do serwisu zajmującego się dodawaniem zadań nie jest najlepszym pomysłem. Dobrze zaprojektowana aplikacja obiektowa ma jednoznacznie rozdzielone odpowiedzialności; każda klasa powinna realizować funkcjonalności zbliżone biznesowo, a dodawanie zadań i wyświetlanie ich na ekran nie koniecznie są powiązane w aż takim stopniu. Do wyświetlania na ekranie tworzymy kolejny serwis
+
+[source, java]
+----          	
+			@Componentpublic 	class TaskPrinter {            
+----   
+
+
+
+[source, java]
+----          	
+				@Autowired	TasksService tasksService;	public void printCurrentTasks() {	List<Task> tasks = tasksService.getTasks();	for (Task t : tasks) {	System.out.println(t);}}}            
+----   
+
+Do powiązania dwóch komponentów użyliśmy adnotacji `@Autowired `(o której wspomniane zostało już w poprzednim module). W naszym przypadku adnotacją oznaczyliśmy pole klasy, chociaż równie dobrze powiązanie komponentów może się odbywać poprzez metodę modyfikatora (setter) albo konstruktor. Tak jak widać na poniższych przykładach, wszystkie konfiguracje są równoważne i dają taki sam efekt.
+
+[source, java]
+----          	
+			@Componentpublic 	class TaskPrinter {	private TasksService tasksService;	public TasksService getTasksService() {	return tasksService;}	@Autowired	public void setTasksService(TasksService tasksService) {	this.tasksService = tasksService;}	//..}            
+----   
+
+
+
+
+
+[source, java]
+----          	
+			@Componentpublic 	class TaskPrinter {private TasksService tasksService;            
+----   
+
+
+
+[source, java]
+----          	
+				@Autowired	public TaskPrinter(TasksService s) {	this.tasksService = s;}	//..}            
+----   
+
+Co jednak należy pamiętać, to aby przestrzegać jednej konwencji konfiguracyjnej i unikać mieszania różnych podejść w jednej aplikacji: np. wstrzykiwania poprzez konstruktor w niektórych klasach i poprzez metodę w innych. Wprowadza to tylko niepotrzebne zamieszanie w kodzie. Konwencją przyjętą w niniejszym szkoleniu jest wstrzykiwanie zależności poprzez pole klasy, co wynika tylko i wyłączenie z przyzwyczajeń autora (taka sama metoda stosowana jest w aplikacjach JEE opartych o komponenty EJB – stąd też próba ujednolicenia stylu). Adnotacja `@Autowired` posiada tylko jeden parametr, będący typu boolean: required. Domyślna wartość to true, która wymaga aby zależności były spełnione w momencie inicjalizacji kontenera. Jeżeli nastąpi próba wstrzyknięcia nieistniejącego komponentu, w momencie inicjalizacji aplikacji zwrócony zostanie wyjątek `NoSuchBeanDefinition`. Alternatywnie, ustawiając wartości flagi na false, kontener staje się mniej restrykcyjny i nie zgłasza błędu w sytuacji gdzie wstrzykiwany komponent nie istnieje w kontekście. Jeżeli nastąpi próba odwołania się do takiego pola, zwrócony zostanie standardowy wyjątek: `NullPointerException`. Sytuacje, w których decydujemy się na opcjonalność komponentu są niezmiernie rzadkie i teraz nie będziemy się nimi zajmować. 
+		
+=== Więcej niż jedna instancja 
+
+Nie zastanawialiśmy się dotychczas co się dzieje gdy w kontekście istnieje więcej niż jedna instancja komponentu (np. kilka komponentów implementuje ten sam interfejs). W takich sytuacjach sama adnotacja `@Autowire` okazuje się być niewystarczająca. Powyższy przykład był niezwykle prosty, spróbujmy go zatem rozszerzyć o kolejny serwis, wypisujący zadania w nieco innej formie. W pierwszej kolejności wyodrębnimy interfejs TaskPrinter oraz zmienimy nazwę istniejącej klasy na ToStringTaskPrinter
+
+[source, java]
+----          	
+			public 	interface TaskPrinter {            
+----   
+
+
+
+[source, java]
+----          	
+				public void printCurrentTasks();}            
+----   
+
+
+
+[source, java]
+----          	
+			@Componentpublic 	class ToStringTaskPrinter implements TaskPrinter {	@Autowired	TasksService tasksService;	public void printCurrentTasks() {	List<Task> tasks = tasksService.getTasks();	for (Task t : tasks) {	System.out.println(t);}}}            
+----   
+
+Wciąż odwołania do nazwanego komponentu odbywać się mogą poprzez `@Autowire`, ponieważ nadal w kontekście istnieje tylko jeden komponenty typie TasksPrinter. Działanie aplikacji nie zmieniło się. 
+
+[source, java]
+----          	
+				@Autowired	TaskPrinter printer;	public void print() {	printer.printCurrentTasks();            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+Utwórzmy zatem dodatkowy komponent, wyświetlający zadania w zmienionej formie.
+
+[source, java]
+----          	
+			@Componentpublic 	class PrettyStringTaskPrinter implements TaskPrinter {	@Autowired	TasksService tasksService;	public void printCurrentTasks() {	List<Task> tasks = tasksService.getTasks();	for (Task t : tasks) {	StringBuilder b = new StringBuilder();	b.append(" * ").append(t.getTitle())	.append(" (").append(t.getDescription()).append(")\n")	.append("\t").append("[")	.append(t.getDate()).append(" for ").append(t.getDuration()/60/60)	.append(" hours")	.append("]");	System.out.println(b.toString());}}}            
+----   
+
+Kolejna próba uruchomiania aplikacji skończy się niepowodzeniem, ponieważ istnieje więcej niż jeden komponent implementujący ten sam interfejs (toStringTasksPrinter oraz prettyStringTasksPrinter). Istnieje kilka sposobów naprawienia tej sytuacji, od zmiany nazewnictwa (i zastosowanie pewnych konwencji) na wykorzystaniu innych adnotacji skończywszy. Zmiana nazwy polaJak już sygnalizowałem wcześniej, bardzo wiele rzeczy w Springu opartych jest o konwencje nazewnicze. Dzięki temu, odpowiednio nazywając pola, klasy, można oszczędzić bardzo dużo kodu konfiguracyjnego (tzw. boiler plate code) i skupić się na implementowaniu oraz realizacji wymagań. Jedną z takich konwencji możemy zastosować tutaj, zmieniając nazwę pola z printer na nazwę odpowiadającą nazwie komponentu który chcemy wstrzyknąć. 
+
+[source, java]
+----          	
+				@Autowired	TaskPrinter toStringTaskPrinter;	public void print() {	toStringTaskPrinter.printCurrentTasks();}            
+----   
+
+
+
+
+
+[source, java]
+----          	
+				@Autowired	TaskPrinter prettyStringTaskPrinter;	public void print() {	prettyStringTaskPrinter.printCurrentTasks();}            
+----   
+
+Framework samodzielnie próbuje rozwiązać wieloznaczność poprzez sprawdzenie czy nazwa pola pasuje do nazwy komponentu w kontekście. Zdaję sobie sprawę że nie jest to najbardziej elegancka metoda i jeżeli komuś przeszkadza pewna doza magii w aplikacji, to alternatywą użycie adnotacji `@Qualifier`, która jednoznacznie wskazuje implementację do wstrzyknięcia. 
+
+Dodatkowa adnotacja @QualifierAdnotacją `@Qualifier` jest swego rodzaju wzorcem, który możemy dowolnie parametryzować aby dopasować zależności do własnych potrzeb. Teoretycznie wytłumaczenie zasady działania tej adnotacji jest dość zawoalowane, posłużmy się więc przykładem. Wstrzykiwany komponent można oznaczyć adnotacją `@Qualifier`, a następnie posłużyć się zadeklarowaną wartością podczas konfigurowania zależności:
+
+[source, java]
+----          	
+			@Component@Qualifier ("pretty")public 	class PrettyStringTaskPrinter implements TaskPrinter {	//..}            
+----   
+
+
+
+[source, java]
+----          	
+				@Autowired	@Qualifier("pretty")	TaskPrinter p;	public void print() {	p.printCurrentTasks();}            
+----   
+
+Jest to rozwiązanie trochę bardziej jawne niż bazowanie na samych nazwach atrybutów klasy, wciąż jednak trudne do utrzymania, ze względu na obecność ciągów znaków, których refaktoring jest niezmiernie skomplikowany i pełen pułapek. 
+
+Możemy zatem utworzyć własny kwalifikator, który następnie będzie wykorzystywany w aplikacji. 
+
+[source, java]
+----          	
+			public enum Printers {	TO_STRING, PRETTIFY;}            
+----   
+
+
+
+[source, java]
+----          	
+			@Target({ElementType.TYPE, ElementType.FIELD, ElementType.PARAMETER})@Retention (RetentionPolicy.RUNTIME)@Qualifierpublic 	@interface PrintQualifier {Printers printerType();}            
+----   
+
+W kolejnym kroku, używamy utworzonego kwalifikatora do rozróżnienia komponentów które pragniemy wstrzykiwać oraz do samego procesu wstrzykiwania zależności.
+
+[source, java]
+----          	
+			@Component@PrintQualifier (printerType = Printers.PRETTIFY)public 	class PrettyStringTaskPrinter implements TaskPrinter {	//..}            
+----   
+
+
+
+[source, java]
+----          	
+			@Autowired	@PrintQualifier(printerType=Printers.PRETTIFY)	TaskPrinter p;	public void print() {	p.printCurrentTasks();}            
+----   
+
+Wstrzykiwanie więcej niż jednej instancjiOstatnim sposobem, dającym największą elastyczność, jest wstrzyknięcie wszystkich możliwych instancji danego typu. W tym celu wykorzystana zostanie funkcjonalność frameworka, pozwalająca na automatyczne tworzenie list (i tablic) na podstawie komponentów kontekstu. Posłużmy się przykładem:
+
+[source, java]
+----          	
+				@Autowired	List<TaskPrinter> printers;	public void print() {	for (TaskPrinter p : printers)p.printCurrentTasks();}            
+----   
+
+Powyższa konstrukcja powoduje, że Spring wstrzyknie wszystkie możliwie komponenty pasujące do interfejsu TaskPrinter i rolą programisty będzie wybór najodpowiedniejszego (lub wszystkich – jak na przykładzie powyżej). Przykład ten może się wydawać dość abstrakcyjny (podobnie jak parametr required adnotacji `@Autowired`, ustawiony na false) jednak ma swoje bardzo konkretne uzasadnienie. Połączenie obu wspomnianych konstrukcji umożliwia bardzo wygodną budowę rozszerzalnych aplikacji (wspierających pluginy). W sytuacji gdy umożliwimy wstrzyknięcie kolekcji komponentów (a nie tylko konkretnej implementacji) oraz oznaczymy tę zależność jako opcjonalną, uzyskujemy bardzo wygodny sposób budowania wtyczek do naszej aplikacji. Jako że Spring może skanować cały classpath (nie tylko w obrębie jednego pliku jar), możemy łączyć kilka modułów, umożliwiając wybór pomiędzy różnymi implementacjami pewnych funkcjonalności. Wybór dokonywany jest przez programistę w oparciu o np. dodatkowe opcje konfiguracyjne bądź specyficzne własności serwera na którym aplikacja jest wdrażana. 
+		
+=== Wstrzykiwanie zasobów
+
+Analogicznie do tworzonych przez nas komponentów, możemy wstrzykiwać zasoby dostarczane przez serwer, kontener, system operacyjny. Jednakże w tym celu należy skorzystać z adnotacji `@Resource`. W odróżnieniu od adnotacji `@Autowire`, `@Resource` nie jest zdefiniowana przez framework, a jest elementem języka Java (JSR-250). Jest to standardowy element języka i poprzez to jej użycie jest w pewnym sensie ograniczone do pól i metod, nie można za jej pomocą oznaczać konstruktora klasy. Takim zasobem wstrzykiwanym przez `@Resource` może być klasa `ApplicationContext` lub `BeanFactory`, czyli związanych ze środowiskiem w którym działa tworzona aplikacja. Jeżeli jest to aplikacja webowa, może być to `WebApplicationContext`, który jest w stanie dostarczyć szeregu dodatkowych informacji – jak np. bazowy URL serwisu. Zasadniczo rzecz biorąc, adnotacje `@Autowire` i `@Resource` mogą być używane zamiennie, z tym że działają one w nieco odmienny sposób. Jeżeli pole oznaczone jest adnotacją `@Autowire`, to Spring przede wszystkim poszukuje klas o odpowiednim typie (tożsamym z typem, który został oznaczony). W przypadku `@Resource` sprawdzana jest przede wszystkim nazwa atrybutu (a w kolejnym kroku wartość atrybuty name adnotacji). Poszukiwane są klasy o nazwie odpowiadającej polu, a gdy te nie są znalezione – dopiero następuje dopasowanie po typie. Przytoczony wyżej przykład wieloznaczności może być zatem także rozwiązany za pomocą adnotacji `@Resource`, gdzie poprzez atrybut name podajemy nazwę komponentu. 
+
+[source, java]
+----          	
+				@Resource(name = "prettyStringTaskPrinter")	TaskPrinter p;	public void print() {	p.printCurrentTasks();}            
+----   
+
+Nie zmienia to jednak faktu, że najlepszy i najbardziej eleganckim rozwiązaniem jest wstrzyknięcie jednej z wielu możliwych implementacji poprzez użycie kwalifikatorów, czyli adnotacji `@Qualifier`. Usuwane są w ten sposób wszystkie, potencjalne niejasności i jest to najbardziej jednoznaczny sposób oznaczania klas.
+		
+=== Inicjacja komponentów
+
+Nie zastanawialiśmy się jednak nad parametrami, które mogą towarzyszyć tworzeniu obiektu; w jaki sposób utworzyć komponent ze zdefiniowanymi wartościami domyślnymi. Może się jednak zdarzyć, że pewne komponenty pragniemy inicjować dodatkowymi danymi – na zasadzie domyślnych wartości. Używamy do tego adnotacji `@Value`, którą oznaczamy pole klasy i jako argument przekazujemy inicjalną wartość. Jeżeli chcielibyśmy aby komponent wyświetlający wartość zadania na ekran (klasa `PrettyStringTaskPrinter`) wyświetlała datę w sposób sformatowany możemy posłużyć się właśnie adnotacją `@Value`. 
+
+[source, java]
+----          	
+			@Component@PrintQualifier (printerType = Printers.PRETTIFY)public 	class PrettyStringTaskPrinter implements TaskPrinter {	@Value("MM/dd/yyyy") 	String pattern;	@Autowired	TasksService tasksService;            
+----   
+
+
+
+[source, java]
+----          	
+				//..}            
+----   
+
+W ten sposób domyślnego formatowania daty nie zapisujemy na sztywno w kodzie aplikacji, ale umożliwiamy jego swobodną zmianę (np. z poziomu kontenera). Można jednak pójść krok dalej: zdefiniować plik konfiguracyjny (plik date-format.properties) który będzie zawierał dodatkowe informacje na temat formatowania daty – i klucz z tego pliku możemy przywołać za pomocą adnotacji `@Value`. Dodatkowo, należy wskazać kontenerowi lokalizację tego pliku, co odbywa się także przez plik konfiguracyjny XML (app-config.xml), w którym dopisujemy następującą linijkę:
+
+[source, java]
+----          	
+			<context:property-placeholder location="classpath:date-format.properties" />            
+----   
+
+Sam plik z właściwościami jest niezmiernie prosty:
+
+[source, java]
+----          	
+			date.pattern = MM/dd/yyyy            
+----   
+
+Tak przygotowaną konfigurację możemy już bezpośrednio wykorzystać w aplikacji:
+
+[source, java]
+----          	
+			@Component@PrintQualifier (printerType = Printers.PRETTIFY)public 	class PrettyStringTaskPrinter implements TaskPrinter {	@Value("${date.pattern}") 	String pattern;	@Autowired	TasksService tasksService;            
+----   
+
+
+
+[source, java]
+----          	
+				//..}            
+----   
+
+
+		
+=== Podsumowanie
+
+W poprzednich dwóch modułach stosunkowo dokładnie omówiłem w jaki sposób rozwiązywane są zależności pomiędzy komponentami i w jakiś sposób programista może mieć wpływ na realizację tych powiązań. W kolejnym module wykorzystamy tą wiedzę aby połączyć aplikację z bazą danych (wstrzyknąć komponenty związane z obsługą bazy) i zastąpić przechowywanie zadań wewnątrz komponentu zadaniami zapisywanymi w sposób trwały w bazie danych. 
+
+== Moduł 4: Warstwa bazy danych
+W poprzednich dwóch częściach składaliśmy aplikację z komponentów, wydzielając obszary odpowiedzialne za realizację poszczególnych wymagań biznesowych. Wszystkie dotychczasowe komponenty działały (w pewnym uproszczeniu) w jednej warstwie; niemalże bezpośrednio wywoływaliśmy usługi realizujące poszczególne funkcjonalności, bez pośrednictwa interfejsu użytkownika. Nie sposób jest jednak zamknąć wszystkie operacje w jednej warstwie – zresztą byłoby to niewskazane. Projektując aplikację, staramy się rozdzielać pewne obszary funkcjonalne. Pierwszym takim obszarem będzie baza danych, którą zajmiemy się teraz. Kolejnym może być interfejs użytkownika, lecz metodami umożliwiania użytkownikowi dostępu do aplikacji (np. poprzez wymyślny interfejs) zajmiemy się później. 
+
+Nie będę starał się tutaj odpowiedzieć, dlaczego rozdzielać warstwy aplikacji – zdecydowanie wykracza to poza zakres i tematykę tego szkolenia. Zresztą, w kolejnych modułach odpowiedź na to pytanie zacznie nasuwać się samoistnie, szczególnie w części poświęconej testowaniu. 
+
+
+		
+=== Konfiguracja bazy danych
+
+Konfiguracja dostęp u do bazy danych w aplikacji opartej o Spring Framework wygląda podobnie do sposobu konfigurowania wszystkich innych komponentów, w końcu klasy realizujące komunikację z bazą danych to także komponenty Spring. Jednakże aby w pełni zrozumieć istotę konfiguracji źródła danych, musimy wspomnieć do plikach konfiguracyjnych, które przez poprzednie dwa moduły tak skrzętnie pomijaliśmy. Dotychczas całość konfiguracji ograniczała się do dwóch wpisów w pliku XML, a wszystkie inne relacje definiowaliśmy na poziomie pisanych przez nas komponentów. Teraz niestety tak nie da się zrobić, komponenty realizujące dostęp do danych są już napisane, są elementami frameworka, a pozostała do wykonania praca sprowadza się do odpowiedniej inicjacji tych komponentów. Niestety, wykracza to poza proste skanowanie pakietów i wymaga większego nakładu pracy konfiguracyjnej. 
+
+Jak to z reguły ma miejsce w Springu, konfiguracja może odbywać się na więcej niż jeden sposób: poprzez pliki XML oraz poprzez JavaConfig. Jako że każda aplikacja bazująca na Spring Framework wymaga choćby minimalnego pliku XML, wykorzystajmy ten już istniejący. W dotychczasowych przykładach utworzony został prosty plik konfiguracyjny i kilka komponentów, które umożliwiały dodawania, pobieranie zadań oraz wyświetlenie zadań w konsoli.
+
+
+
+[source, java]
+----          	
+			<?xml version="1.0" encoding="UTF-8"?><beans xmlns="http://www.springframework.org/schema/beans"xmlns:xsi="
+		link:http://www.w3.org/2001/XMLSchema-instance[]
+	"xmlns:context="http://www.springframework.org/schema/context"xsi:schemaLocation="
+		link:http://www.springframework.org/schema/beans[]
+		 http://www.springframework.org/schema/beans/spring-beans-3.0.xsd http://www.springframework.org/schema/context  	 	 http://www.springframework.org/schema/context/spring-context-3.0.xsd">	<context:component-scan base-package="pl.devcastzone.spring" />	<context:property-placeholder location ="classpath:date-format.properties" /></beans>            
+----   
+
+Jako że komponenty realizujące dostęp do bazy danych są już napisane, musimy je tylko skonfigurować. Najprostszym sposobem jest komunikacja z bazą danych bezpośrednio poprzez JDBC, z wykorzystaniem komponentu `DataSource`. Spring umożliwia komunikację z bazą danych poprzez szereg komponentów o różnym stopniu skomplikowania: od bezpośredniej komunikacji z wykorzystaniem JDBC, poprzez szereg dodatkowych poziomów abstrakcji, umożliwiających separacje programisty od bazy danych (JDBC, bezpieczny wątkowo JDBCTemplate, JPA, Hibernate jak też inne systemy ORM, na różnego rodzaju data mapperach skończywszy – np. iBatis). Wszystkie te sposoby zostaną omówione w obrębie niniejszego modułu. Zacznijmy jednak od sytuacji najprostszej: bezpośrednie wykorzystanie źródła danych (`DataSource`). 
+
+
+		
+=== Podstawowy obiekt DAO
+
+Jako bazy danych użyjemy HSQLdb – czyli bazy danych typu embedded. Dołączenie jej do projektu ogranicza się do dodania jednej biblioteki (hsqldb.jar) bądź dodania nowej zależności w pliku konfiguracyjnym Maven. Konfiguracja takiej bazy danych wyglądać będzie następująco
+
+
+
+[source, java]
+----          	
+				<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"destroy-method="close">	<property name="driverClassName" value="org.hsqldb.jdbcDriver" />	<property name="url" value ="jdbc:hsqldb:file:target/localdb/testdb" />	<property name="username" value="sa" />	<property name="password" value="" /></bean>            
+----   
+
+Tak przygotowane źródło danych możemy użyć w aplikacji. Jeżeli uzupełnimy bazę danych to odwołanie się do źródła danych wyglądać będzie następująco
+
+
+
+[source, java]
+----          	
+			create 	table tasks (	task_id bigint generated by default as identity,	title varchar(255),	description varchar(255),	startdate datetime,	duration bigint,	primary 	key (task_id))            
+----   
+
+
+
+[source, java]
+----          	
+			insert 	into tasks values (1, 'Database task', 'A hour task for preparing the database', '2012-01-22', 3600000)insert into tasks values (2, 'Programming task', 'A hour task for implementing database access', '2012-01-23', 3600000)            
+----   
+
+Zmodyfikowany TasksService, odczytujący dane z bazy danych, powinien wyglądać następująco:
+
+
+
+[source, java]
+----          	
+			@Componentpublic 	class TasksService {	@Resource	DataSource dataSource;            
+----   
+
+
+
+[source, java]
+----          	
+				//..	public List<Task> getTasks() throws Exception {	Connection connection = dataSource.getConnection();PreparedStatement statement = connection	.prepareStatement("SELECT * FROM TASKS");statement.execute();ResultSet resultSet = statement.getResultSet();            
+----   
+
+
+
+[source, java]
+----          	
+				List<Task> tasks = new ArrayList<Task>();	while (resultSet.next()) {	Task t = new Task();	t.setTitle(resultSet.getString("TITLE"));	t.setDescription(resultSet.getString("DESCRIPTION"));	t.setDate(resultSet.getDate("STARTDATE"));	t.setDuration(resultSet.getInt("DURATION"));tasks.add(t);}            
+----   
+
+
+
+[source, java]
+----          	
+			connection.close();	return tasks;}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+Analogiczną metodą możemy próbować zapisać dane do bazy. 
+
+[source, java]
+----          	
+				public void addTask(Date startDate, int duration, String title,	String description) throws Exception {Connection connection = dataSource.getConnection();PreparedStatement statement = connection	.prepareStatement("INSERT INTO TASKS" +	" (title, description, startdate, duration)" +	" VALUES (?, ?, ?, ?)");statement.setString(1, title);statement.setString(2, description);	statement.setDate(3, new java.sql.Date(startDate.getTime()));statement.setInt(4, duration);statement.execute();            
+----   
+
+
+
+[source, java]
+----          	
+			connection.close();}            
+----   
+
+Nie ulega jednak kwestii że taka metoda dostępu nie jest najlepsza. Jak widać już na powyższym przykładzie, zmusza ona programistę do pamiętania o szeregu dodatkowych czynności (zamykanie i otwieranie połączenia do bazy danych, obsłudze wyjątków `SQLException`), nie wiadomo jak kod się zachowa w sytuacji gdy będzie działać w wielowątkowej aplikacji, a na koniec (z czysto ludzkiego punktu widzenia) zaprezentowany kod nie wygląda intuicyjnie i niejednoznacznie wyraża wolę programisty. Sens pobierania danych z bazy jest oddany, ale ilość dodatkowego kodu powoduje że procedura staje się nieczytelna. Wykorzystajmy zatem dodatkowy komponent oferowany przez Spring Framework, ułatwiający komunikacje z bazą danych: `JdbcTemplate`.
+		
+=== Użycie komponentu JDBC Template
+
+Jak widać było w pierwszych przykładach, wszystkie zadania związane z połączeniem do bazy danych leżały w gestii programisty; było to: 
+
+* Konfiguracja połączenia do bazy danych (lokalizacja źródła danych, nazwa użytkownika i hasło itd);
+* Otwieranie połączenia do bazy danych;
+* Przygotowanie zapytania do bazy oraz podanie parametrów;
+* Przygotowanie i wywołanie zapytania;
+* Pobranie wyników oraz iteracja po nich (z wykorzystaniem ResultSet);
+* Obsługa błędów i transakcji (tego elementu jeszcze nie poruszaliśmy, zakładając, że wszystko się powiodło – wrócimy do tego tematu w dalszej części modułu);
+* Zamknięcie połączenia do bazy danych.
+
+Jak widać, kroków było sporo, z czego większość jest powtarzalna i aż prosi się o zastosowanie pewnych wzorców i uproszczeń. Właśnie w tym celu używa się komponentu do obsługi JDBC dostarczanych przez framework. Większość z wymienionych powyżej operacji odbywa się wtedy automatycznie (wykonuje ją framework) ograniczając rolę programisty to rzeczy najważniejszych: konfiguracji parametrów połączenia do bazy danych (konfiguracji `DataSource`) oraz pisania zapytań SQL i ich parametryzowanie. Liczba rzeczy, o których należy pamiętać zmniejsza się z początkowych ośmiu kroków – do dwóch.
+
+Konfiguracja źródła danychKlasa `JdbcTemplate` jest bezpieczna wątkowo, tzn. że wystarczy skonfigurować jedną instancję komponentu, aby móc z powodzeniem wykorzystywać go w całej aplikacji. Możemy usprawnić istniejącą aplikację i zamiast bezpośredniego korzystania ze źródła danych, użyjmy `JdbcTemplate`. Przede wszystkim, nasze zmiany nie pociągają za sobą konieczności modyfikowania pliku konfiguracyjnego XML – definicja komponentu `DataSource` pozostaje tak jak była. Przestajemy jedynie korzystać bezpośrednio z bazy i wprowadzamy pośrednika:
+
+[source, java]
+----          	
+			@Componentpublic 	class TasksService {            
+----   
+
+
+
+[source, java]
+----          	
+				private JdbcTemplate jdbcTemplate;	@Autowired	public TasksService(DataSource dataSource) {	this.jdbcTemplate = new JdbcTemplate(dataSource);}	//..}            
+----   
+
+Samo użycie klasy `JdbcTemplate` także nie powinno nastręczać problemów; wykorzystanie jej do pobrania zadań z bazy wygląda daleko bardziej intuicyjnie niż poprzednia wersja wymagająca otwarcia połączenia do bazy, a następnie pracy na obiekcie `ResultSet`. 
+
+
+
+[source, java]
+----          	
+			public List<Task> getTasks() throwsException {	List<Map<String, Object>> queryForList = jdbcTemplate	.queryForList("SELECT * FROM TASKS");	List<Task> tasks = new ArrayList<Task>();	for (Map<String, Object> r: queryForList) {	Task t = new Task();	t.setTitle((String)r.get("TITLE"));	t.setDescription((String)r.get("DESCRIPTION"));	t.setDate((Date) r.get("STARTDATE"));	t.setDuration(((Long)r.get("DURATION")).intValue());tasks.add(t);}            
+----   
+
+
+
+[source, java]
+----          	
+				return tasks;}            
+----   
+
+Komponentu `JdbcTemplate` można także użyć do zapisania danych do bazy; korzystając z metody update zdecydowanie upraszcza się logikę zapisu do bazy. Napisana poprzednio metoda addTask() wyglądać będzie następująco.
+
+
+
+[source, java]
+----          	
+			public void addTask(Date startDate, int duration, String title,	String description) throws Exception {	jdbcTemplate.update("INSERT INTO TASKS" +	" (title, description, startdate, duration)" +	" VALUES (?, ?, ?, ?)", title, description, 	new java.sql.Date(startDate.getTime()), duration);}            
+----   
+
+Jak widać na powyższych dwóch przykładach, skorzystanie z zestawu narzędzi do JDBC znacząco ułatwia realizowanie komunikacji z bazą danych. Nadal korzystamy z zapytań SQL, jednakże nie ma już konieczności pisania kodu obsługującego połączenie, który z punktu widzenia logiki biznesowej jest całkowicie zbędny. Takie podejście doskonale prezentuje wartości, które leżą u podstaw całego framworka, czyli zwiększenie efektywności programisty poprzez przeniesienie uwagi na czynności istotne z punktu widzenia aplikacji (logika, realizacja funkcjonalności). Narzędzia, które zwalniają programistę z pisania kodu nadmiarowego, niepotrzebnego z punktu widzenia logiki aplikacji, są wpisane w ekosystem Spring Framework i `JdbcTemplate` jest tego najlepszym przykładem. Co więcej, mniejsza ilość kodu to także mniejszy obszar potencjalnych błędów i problemów, zmniejsza ilość kodu potrzebnego do przetestowania. Nasze rozwiązanie staje się solidniejsze, ponieważ ma bardzo dobrą bazę w postaci stabilnego i dobrze przetestowanego frameworku. 
+
+Rodzina klas Spring Framework JDBC`JdbcTemplate` to najpopularniejszy sposób dostępu do bazy danych, ale nie jedyny. Na bazie tej klasy utworzona została cała rodzina pomocniczych komponentów o bardziej specyficznym zastosowaniach, oferujących lepszy komfort pracy bądź zwiększające czytelność kodu. Jeżeli zamiast znaków zapytania („?”) pragniemy nazywać parametry zapytania, możemy skorzystać z `NamedParameterJdbcTemplate` lub `SimpleJdbcTemplate`, które łączy w sobie najpopularniejsze metody dwóch pierwszych komponentów. 
+
+[source, java]
+----          	
+			public void addTask(Date startDate, int duration, String title,	String description) throws Exception {	Map<String, Object> map = new HashMap<String, Object>();	map.put("title", title);	map.put("desc", description);	map.put("date", new java.sql.Date(startDate.getTime()));	map.put("duration", duration);	jdbcTemplate.update("INSERT INTO TASKS" +	" (title, description, startdate, duration)" +	" VALUES (:title, :desc, :date, :duration)", map);}            
+----   
+
+W sytuacji gdzie aplikacje będzie wykonywała wiele zapisów do bazy, można skorzystać z `SimpleJdbcInsert`, które minimalizując ilość potrzebnego kodu do wykonania zapytania, opierając się na meta danych dostarczanych przez bazę danych. Wykorzystując `SimpleJdbcInsert` należy szczególną uwagę zwrócić na nazwy parametrów; aby nazwy kluczy w mapie odpowiadały nazwie kolumn w bazie danych – taka jest konwencja wykorzystywana do budowania zapytań.
+
+[source, java]
+----          	
+			@Componentpublic 	class TasksService {	private SimpleJdbcTemplate jdbcTemplate;	private SimpleJdbcInsert insertTask;	@Autowired	public TasksService(DataSource dataSource) {	this.jdbcTemplate = new SimpleJdbcTemplate(dataSource);	this.insertTask = new SimpleJdbcInsert(dataSource)	.withTableName("tasks");}	public void addTask(Date startDate, int duration, String title,	String description) throws Exception {	Map<String, Object> map = new HashMap<String, Object>();	map.put("title", title);	map.put("description", description);	map.put("startdate", new java.sql.Date(startDate.getTime()));	map.put("duration", duration);	insertTask.execute(map);}            
+----   
+
+
+
+[source, java]
+----          	
+				//..}            
+----   
+
+
+		
+=== Mapowanie obiektowo relacyjne w Springu
+
+Alternatywą do bezpośredniego operowania na danych za pomocą języka SQL jest mapowanie obiektowo relacyjne (ang. Object Relational Mapping – ORM). Wykorzystanie takiego podejścia umożliwia programiście pozostanie w dziedzinie obiektów, podczas gdy wszystkie operacje bazodanowe będą wykonane automatycznie przez framework, który całkowicie zwolni nas z pisania zapytań w języku SQL. Wprowadzenie silników ORM miało przede wszystkim umożliwić wyraźnie podzielenie aplikacji na warstwy, unikając mieszania kodu odpowiedzialnego za współpracę z bazą danych z kodem biznesowym. W sytuacji gdy całość operacji bazodanowych zamknięta jest w niezależnym frameworku, programista przestaje operować w domenie SQL, skupiając się wyłącznie na warstwie obiektów. Reprezentacja pobieranych danych to obiekty a nie tablice, mapy – co pozwala znacząco uprościć model domenowy aplikacji oraz znacznie zmniejsza ilość kodu niezbędnego do napisania. Pozwala skupić się nad logiką biznesową oraz modelu obiektowym, a nie myśleć kategoriami encji i relacji bazodanowych, których trudniej jest użyć do modelowania domeny biznesowej. Nie jest to miejsce, aby omawiać wady i zalety silników ORM, jednakże kilka słów wprowadzenia dla osób niemających dotychczas do czynienia z tą technologia. Z początku, może się wydawać, że automatyczne tworzenie zapytań SQL jest niebezpiecznie i może być mało optymalne. Nic bardziej mylnego, w przypadku ogólnym, zapytania te będą daleko bardziej wydajne niż te napisane przez statystycznego programistę. Dodatkowo framework posiada szereg mechanizmów i algorytmów optymalizujących i cachujących, co dodatkowo, pozytywnie wpływa na wydajność. Bardzo często, jest to wystarczające, aby pokryć narzut spowodowany przez dodatkową warstwę abstrakcji. Obiekty i encjePierwszy krokiem, jeszcze poprzedzającym konfigurację samego narzędzia, należy odpowiednio przygotować obiekty które będą odzwierciedlały byty bazodanowe. Nie jest konieczne tworzenie nowych obiektów, możemy w tym celu, za pomocą adnotacji, dekorować już istniejące klasy modelu (np. klasę Task, wykorzystawaną w przykładzie). Wykorzystywane adnostacje wchodzą w skład JPA i są standardem języka Java opisanym w JSR-220 oraz JSR-317 (JPA 2.0). Zmodyfikowana klasa Task wygląda następująco. 
+
+[source, java]
+----          	
+			@Entity@Table (name = "TASKS")public 	class Task {            
+----   
+
+
+
+[source, java]
+----          	
+				@Id@GeneratedValue	@Column(name = "task_id")	private long taskId;	@Temporal(TemporalType.DATE)	@Column(name = "startdate")	private Date date;	@Basic	private int duration;	private String title;	private String description;            
+----   
+
+
+
+[source, java]
+----          	
+				//..}            
+----   
+
+Jeżeli poprzestaniemy tylko na oznaczeniu klasy adnotacjami JPA, nic nie zmieni się w sposobie działania aplikacji. Adnotacje JPA są nieinwazyjne, tzn. ich wprowadzenie nie zmienia sposobu działania aplikacji i dotychczasowe metody komunikacji z bazą danych nie muszą być zmieniane. Pokazane w przykładzie adnotację są minimalne, aby JPA zadziałało w kontekście przykładowej aplikacji, wykraczają one jednak poza minimalny zestaw adnotacji konieczny to traktowania klasy jako encji. Pełne omówienie JPA wykracza daleko poza zakres niniejszego szkolenia. Kolejnym krokiem będzie konfiguracja `EntityManagera`Konfiguracja EntityManageraJPA jest standardem, zbiorem adnotacji i interfejsów, które następnie są implementowane przez frameworking ORM: Hibernate, EclipseLink (referencyjna implementacja JPA 2.0), TopLink, OpenJPA. W przypadku ogólnym możemy korzystać z dobrodziejstw JPA bez konieczności wiązania się z konkretną implementacją; wykorzystując kilka pośredniczących komponentów dostarczanych przez Springa, kod aplikacji będzie wolny od konkretnych implementacji – bazując tylko na standardowych interfejsach. Wszystkie odniesienia do Hibernate pozostaną na poziomie plików konfiguracyjnych. Należy jednak pamiętać, że JPA jest standardem pomyślanym dla serwerów aplikacji, gdzie źródło danych (`PersistenceUnit`) definiowane i zarządzane jest przez serwer, zmuszając aplikacje do korzystania z już istniejącej jednostki i pobierania jej z drzewa JNDI. Jednakże w przypadku naszej aplikacji jest to trochę bardziej skomplikowane – nie korzystamy z drzewa JNDI. Dlatego zamiast odniesienia do lokalizacji źródła danych w drzewie JNDI należy samodzielnie wskazać implementację JPA, która będzie wykorzystywana, a następnie ręcznie skonfigurować połączenie ze źródłem danych. Spowoduje to pewne zmiany w plikach konfiguracyjnych. 
+
+[source, java]
+----          	
+			<?xml version="1.0" encoding="UTF-8"?><persistence xmlns="http://java.sun.com/xml/ns/persistence"xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"xsi:schemaLocation="http://java.sun.com/xml/ns/persistence             
+----   
+
+	http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+
+[source, java]
+----          	
+			version="2.0">	<persistence-unit name="pu" transaction-type="RESOURCE_LOCAL">	<provider>org.hibernate.ejb.HibernatePersistence</provider>	</persistence-unit></persistence>            
+----   
+
+
+
+[source, java]
+----          	
+			<bean id="myEmf" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"><property name="dataSource" ref="dataSource" />	<property name="persistenceXmlLocation" value ="classpath:META-INF/persistence.xml"></property></bean>            
+----   
+
+Tak przygotowane pliki konfiguracyjne spowodują że w momencie budowania kontenera utworzona zostanie fabryka `EntityManagerFactory`, którą następnie wykorzystamy w serwisie, znacznie upraszczając pobieranie danych z bazy, za pomocą standardowych metod JPA. 
+
+[source, java]
+----          	
+			@Componentpublic 	class TasksService {	@PersistenceContext	private 	EntityManager entityManager;	//..            
+----   
+
+
+
+[source, java]
+----          	
+				public List<Task> getTasks() throws Exception {	List<Task> tasks = entityManager.createQuery("from Task",	Task.class).getResultList();	return tasks;}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+Zastosowanie i ograniczenie się do standardowej biblioteki JPA i EntityManager'a ma swoje ograniczenia, jest szereg metod i adnotacji, z których nie możemy skorzystać. W przypadku tak małej aplikacji może to być przerost formy nad treścią. W sytuacji jednak, gdyby aplikacja miała zostać uruchomiona na serwerze aplikacji (np. JBoss), mała tylko zmiana konfiguracji pozwoli na zastosowanie bazy danych dedykowanej serwerowi aplikacji. Sposób, w jaki taka zmiana mogłaby się odbyć zostanie omówiony w dalszych modułach szkolenia, przy okazji dokładnego omawiania plików konfiguracyjnych XML. Wtedy też zostaną pokazane sposoby dzielenia plików konfiguracyjnych na mniejsze części, aby umożliwić elastyczne wdrażanie aplikacji w zależności od środowiska. Konfiguracja HibernateHipotetyczna elastyczność, opisana w poprzednim punkcie, bardzo często jest zbędna. Budując aplikację, tworzymy ją pod kątem konkretnego środowiska, z założeniem że nigdy nie konieczności przenoszenia jej pomiędzy różnymi serwerami (bądź w ogóle korzystania z serwera aplikacji). Zastosowanie komponentu `EntityManager` jest zbędną elastycznością i skoro pod spodem i tak korzystamy np. z Hibernate (jako frameworka ORM), to przywołajmy go bezpośrednio. Uprości to znacznie konfigurację (przede wszystkim poprzez likwidację dodatkowego pliku konfiguracyjnego persistence.xml). Hibernate jest trochę bardziej explicite, łącznie z koniecznością wskazywania encji (lub pakietów, które należy w poszukiwaniu encji przeskanować). 
+
+[source, java]
+----          	
+			<bean id="mySessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">	<property name="dataSource" ref="dataSource" /><property name="packagesToScan" value="pl.devcastzone.spring.model" />	<property name="hibernateProperties">	<value>hibernate.dialect=org.hibernate.dialect.HSQLDialect	</value>	</property></bean>            
+----   
+
+
+
+
+
+[source, java]
+----          	
+			@Componentpublic class TasksService {	@Resource	private SessionFactory sessionFactory;//..            
+----   
+
+
+
+[source, java]
+----          	
+				public List<Task> getTasks() throws Exception {	List<Task> tasks = (List<Task>) sessionFactory.openSession()	.createQuery("from Task").list();	return tasks;}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+W analogiczny sposób możemy zapisać dane do bazy danych, także wykorzystując sesję Hibernate.
+
+[source, java]
+----          	
+				public void addTask(Date startDate, int duration, String title,	String description) throws Exception {	Task t = new Task.Builder().withTitle(title).withDescription(description).withDate(startDate).withDuration(duration).build();	sessionFactory.openSession().save(t);}            
+----   
+
+Warto jednak zwrócić uwagę na użycie metody openSession(), które zawsze tworzy nową sesję, bazującą na istniejącym połączeniu do bazy danych. Jeżeli spróbowalibyśmy zrobić to samo z wykorzystaniem EntityManager'a (metody persist() a następnie flush()) to niestety nie powiedzie się to; zwrócony zostanie wyjątek TransactionRequiredException: no transaction is in progress. Analogiczny problem pojawi się gdy zamiast tworzyć za każdym razem nowe sesje Hibernate, postanowimy używać już istniejącej, pobierając ją za pomocą metody getCurrentSession(): HibernateException: No Hibernate Session bound to thread, and configuration does not allow creation of non-transactional one here. 	
+		
+=== Transakcje
+
+No więc właśnie – transakcje. Omawiając silniki ORM i pokazując, w jaki sposób można z nich korzystać za pośrednictwem Springa, zupełnie pominąłem metodę dodającą nowe zadanie do bazy danych. Zostało to zrobione specjalnie, aby nie robić zamieszania i nie wprowadzać nowych pojęć zbyt szybko. Przez cały moduł omawiając wszystkie przykłady ani razu nie pojawiła się kwestia zarządzania transakcjami. Dopiero na samym końcu doszliśmy do sytuacji gdzie transakcje stały się koniecznością. Transakcje w kontekście aplikacji nie różnią się niczym od pojęcia które jest dobrze znane w domenie baz danych. Podobnie jak w przypadku baz danych, transakcje można scharakteryzować jako ACID:* Atomowe (atomic) - transakcja jest elementem niepodzielnym - albo udaje się w całości albo wcale,
+* Spójne (consistent) – transakcja nie narusza integralności danych, przed i po wykonaniu transakcji system pozostaje spójny,
+* Izolowane (isolated) - jeżeli dwie transakcje wykonywane są równolegle to nie widzą zmian przez siebie wprowadzanych,
+* Trwałe (durable) - w przypadku nagłej awarii, system jest w stanie udostępnić spójne i nienaruszone dane, niezależnie od momentu, w którym transakcja została przerwana. 
+
+Różnica polega na tym, że operacje objęte transakcją nie muszą być operacjami na bazie danych, ale może to być także zapis do pliku, wywołanie zewnętrznego zasobu poprzez web service itd. Jeżeli spojrzeć na nieco zmodyfikowany pierwszy przykład, można zobaczyć, że pomimo wystąpienia błędu podczas przetwarzania (wyrzucony został wyjątek) – rekord został dodany do bazy danych. Jest to zachowanie jak najbardziej prawidłowe, ponieważ nigdzie nie zostało zaznaczone, że zapisanie rekordu do bazy ma być uzależnione od jakiejkolwiek innej operacji. Transakcje w kontekście aplikacji oferowane przez framework wykraczają poza typowe transakcje bazodanowe, niejako je rozszerzając. Używając managera transakcji udostępnianego przez Spring zyskujemy jednolite i wygodne API do zarządzania transakcjami po stronie aplikacji, ale także łączymy to z transakcją bazodanową (lub jakąkolwiek inną, która może istnieć). 
+
+[source, java]
+----          	
+			@Componentpublic 	class TasksService {            
+----   
+
+
+
+[source, java]
+----          	
+				private SimpleJdbcInsert jdbcInsert;	@Autowired	public TasksService(DataSource dataSource) {	jdbcInsert = new SimpleJdbcInsert(dataSource)	.withTableName("TASKS");}	public void addTask(Date startDate, int duration, String title,	String description) throws Exception {	Map<String, Object> params = new HashMap<String, Object>();	params.put("title", title);	params.put("description", description);	params.put("startdate", new java.sql.Date(startDate.getTime()));	params.put("duration", duration);	jdbcInsert.execute(params);	throw new RuntimeException("ERROR!");}            
+----   
+
+
+
+[source, java]
+----          	
+				//..}            
+----   
+
+Transakcje aplikacyjne służą właśnie do łączenia kilku operacji i uzależniają końcowy wynik przetwarzania od powodzenia wszystkich operacji objętych transakcją. Powyższa operacja przebiegła jak najbardziej poprawnie z punktu widzenia bazy danych – operacja zapisu zakończyła się sukcesem. Błąd wystąpił po stronie aplikacji, która w żaden sposób nie dbała o spójność wykonywanych operacji. Aby zabezpieczyć się przed takimi problemami, Spring umożliwia zarządzanie transakcjami po stronie aplikacji (w analogiczny sposób jak odbywa się to w kontenerach EJB). Spring oferuje dość szeroki zestaw narzędzi umożliwiających duża granulację transakcji i bardzo dużą dowolność w wykorzystaniu transakcji. Na początku skupimy się na najprostszym przypadku, czyli adnotacji `@Transactional`, która umożliwia objęcie procesu (lub jego fragmentu) transakcją zarządzaną przez framework. Samo oznaczenie metody wspomnianą adnotacją, obejmuje ją transakcją i nie pozwala na częściowe zakończenie operacji w przypadku wystąpienia błędu. Poprawna konfiguracja sprowadza się do poinformowania kontenera o wykorzystaniu transakcji opartych o adnotację oraz połączeniu managera transakcji z odpowiednim źródłem danych (aby operacje bazodanowe nie zostały zakończone w momencie wystąpienia problemu po stronie aplikacji). Po uzupełnieniu pliku konfiguracyjnego można zacząć stosować adnotację `@Transactional` mając pewność, że operacja przerwana błędem zostanie poprawnie wycofana. 
+
+[source, java]
+----          	
+				<tx:annotation-driven transaction-manager="txManager" />            
+----   
+
+
+
+[source, java]
+----          	
+				<bean id="txManager"class="org.springframework.jdbc.datasource.DataSourceTransactionManager">	<property name="dataSource" ref="dataSource" /></bean>            
+----   
+
+
+
+[source, java]
+----          	
+			@Transactional	public void addTask(Date startDate, int duration, String title,	String description) throws Exception {	Map<String, Object> params = new HashMap<String, Object>();	params.put("title", title);	params.put("description", description);	params.put("startdate", new java.sql.Date(startDate.getTime()));	params.put("duration", duration);	jdbcInsert.execute(params);	throw new RuntimeException("ERROR!");}            
+----   
+
+Dokładne zrozumienia sposobu działania transakcji wymaga wprowadzenia nowego pojęcia – aspektów i interceptorów. Aspektami zajmiemy się w kolejnych modułach, więc na razie poprzestaniemy na minimalnej ilości nowych informacji, bezpośrednio związanych z obsługą bazy danych. Dokładniejsze omówienie różnorakich sposobów na konfigurowanie transakcji nastąpi w części odnoszącej się do plików konfiguracyjnych XML, w jednym z dalszych modułów.Transakcje i JPAW odróżnieniu od poprzednich przykładów opartych o czyste niskopoziomowe JDBC, gdzie skorzystanie z transakcji zarządzanych przez framework było opcjonalne – aplikacja potrafiła działać także bez tego, JPA wymaga istnienia transakcji (przy czym operacje odczytu z oczywistych względów jej nie potrzebują). Zarządzanie transakcjami opisuje kolejny standard – JTA. Nie będziemy tutaj jednak go omawiać, skupimy się w jak skonfigurować framework, aby zarządzał transakcjami. Także w tym przypadku oprzemy się o adnotację `@Transactional`, którą oznaczymy metody korzystające z bazy danych. Gdy nie użyjemy adnotacji i spróbujemy zapisać dane to zwrócony zostanie wyjątek – co widzieliśmy na przykładzie z `EntityManagerem`. Jeżeli decydujemy się na użycie Hibernate'a to bez jesteśmy ograniczeni do mało efektywnego tworzenia sesji dla każdej operacji bazodanowej. Utworzenie transakcji, jeżeli korzystamy z Hibernate'a jest niezwykle proste i przebiega w analogiczny sposób co w przypadku połączenia JDBC – wystarczające jest uzupełnienie pliku konfiguracyjnego o następujący wpis.
+
+[source, java]
+----          	
+				<tx:annotation-driven transaction-manager="txManager" />	<bean id="txManager"class="org.springframework.orm.hibernate3.HibernateTransactionManager">	<property name="sessionFactory" ref="mySessionFactory" /></bean>            
+----   
+
+Adnotacja @TransactionalWykorzystana w poprzednich przykładach adnotacja `@Transactional`, umożliwiała deklaratywne objęcie fragmentu systemu transakcją. Podejście zaproponowane przez Spring Framework znacząco różni się od modelu np. JEE, gdzie wszystkie publiczne metody są objęte transakcją z definicji i programista wprowadza zmiany, jeżeli domyślna konfiguracja mu nie odpowiada. W Springu, brak deklaracji transakcji oznacza jej brak. Samo objęcie metody transakcją odbywa się poprzez dodanie do kontekstu komponentu `TransactionManager` oraz wspomnianą powyżej adnotację. Sama adnotacja przyjmuje szereg parametrów które umożliwiają dalsze konfigurowanie transakcji:
+
+* Value: opcjonalna nazwa kwalifikatora managera transakcji który ma zostać użyty (jeżeli występuje więcej niż jeden). 
+* Propagation: propagacja transakcji, definiuje sposób zachowania w przypadku gdy transakcja została już rozpoczęta. Domyślna wartość to REQUIRED
+* Isolation: poziom izolacji transakcji, określa sposób komunikacji pomiędzy transakcjami, czy możliwe jest odczytywanie tymczasowych danych (ang. dirty read), z jeszcze niezamkniętych transakcji. Domyślna wartość to DEFAULT (odpowiadająca domyślnej strategi na poziomie źródła danych JDBC). 
+* ReadOnly: określa czy transakcja jest tylko odczytująca czy obejmuje zarówno operacje odczytu jak i zapisu
+* Timeout: określony w sekundach maksymalny czas trwania transakcji. 
+* Rollback / NoRollback: seria atrybutów, które definiują które wyjątki (wymienione poprzez typ lub nazwę) powodują lub nie cofnięcie transakcji. 
+
+Propagacja transakcjiSpring wspiera wszystkie typy transakcji znane z EJB, a także nieznacznie je rozszerza:
+
+* REQUIRED; wartość domyślna dla kontenera. Jeżeli klient wywoła metodę biznesową oznaczoną atrybutem REQUIRED to operacja zawsze będzie objęta transakcją. Będzie to nowo utworzona transakcja (w momencie gdy klient nie jest nią objęty) lub wykorzystana będzie transakcja już istniejąca
+* NOT_SUPPORTED; klient nie obsługuje transakcji. Jeżeli klient jest takową już objęty, to na czas wywołania metody transakcja jest zawieszona i po przetwarzaniu wznowiona.
+* SUPPORTS; komponent zachowuje się poprawnie zarówno z jak i bez transakcji. Atrybut SUPPORTS powoduje dwoiste zachowanie się komponentu. W przypadku aktywnej transakcji, zachowanie jest takie samo jak w przypadku atrybutu REQUIRED. Jeżeli natomiast transakcja nie jest aktywna - NOT_SUPPORTED. 
+* REQUIRES_NEW; dla każdego wywołania metody tworzona jest nowa transakcja. Jeżeli transakcja istnieje, jest zawieszona a następnie wznowiona po wywołaniu metody. 
+* MANDATORY; transakcja musi być aktywna. Jeżeli takowa istnieje, zachowanie się kontenera jest analogiczne do sytuacji z atrybutem REQUIRED. Jeżeli transakcji nie ma, zgłaszany jest błąd i wyrzucany jest wyjątek
+* NEVER; sytuacja odwrotna do powyższej. Metoda nie może być wywołana w obrębie transakcji. Jeżeli transakcja nie istnieje - zachowanie jest takie samo jak w przypadku atrybutu NOT_SUPPORTED. W innym przypadku zgłaszany jest błąd. 
+
+Dodatkowym atrybutem jest NESTED, która powoduje utworzenie zagnieżdżonej transakcji, z wieloma punktami zapisu (ang. save points). Ta transakcja nie ma swojego odpowiednika w EJB, ponieważ jest wspierana tylko i wyłącznie przez źródła danych oparte o JDBC 3.0. Użycie takie transakcji pozwala na częściowe nawrócenie transakcji (ang. rollback) do najbliższego wewnętrznego punktu zapisu, podczas gdy z zewnętrznej perspektywy transakcja wciąż jest aktywna i działająca. 
+
+
+		
+=== Inne sposoby dostępu do bazy (iBatis)
+
+Wprowadzanie kolejnej warstwy w aplikacji nie odbywa się niestety bez dodatkowych kosztów. Kolejna warstwa, mimo że znacznie uprasza samą aplikację, wymaga więcej zasobów, zwiększa czas uruchamiania się aplikacji. Podejmując decyzję o np. rezygnacji z `JdbcTemplate` i wykorzystaniu JPA, należy brać pod uwagę nie tylko samą wygodę programisty (ta bowiem nie podlega dyskusji), ale także implikacje niefunkcjonalne, takie jak szybkość działania (np. wydajność generowanych zapytań SQL), czas startu aplikacji. Okazuje się bowiem, że pomiędzy JDBC i JPA istnieje jeszcze kilka alternatywnych podejść, które zostaną omówione w kolejnych przykładach. Mam tutaj na myśli alternatywne sposoby dostępu do bazy danych; alternatywne w tym sensie niebycia standardem języka Java. Opisane powyżej przypadki reprezentują dwie skrajności: przechowywania zapytań SQL bezpośrednio w kodzie aplikacji, jak i całkowite oderwanie aplikacji od konkretnego typu bazy danych poprzez wejście na wyższy poziom abstrakcji i wykorzystanie mapowania obiekt – relacja. Stosunkowo często programista potrzebuje rozwiązania pośrodku: mapowania konkretnych wyrażeń SQL (napisanych przez programistę) na obiekty, bez konieczności korzystania – przy okazji nie przechowując tych zapytań bezpośrednio w kodzie aplikacji. Takim złotym narzędziem może być iBatis, które mapuje wynik zapytania SQL na konkretną klasę, przy czym całość konfiguracji leży po stronie programisty i nie ma tutaj żadnej magii, którą stara się oferować JPA. Nim jednak skorzystamy z zewnętrznej biblioteki, warto spojrzeć jakie możliwość oferuje sam framework – często one okazują się być wystarczające. Mapowanie zapytań na obiektyZacznijmy od klasy `MappingSqlQuery`, dostępnej w samym frameworku. 	Spring udostępnia bazową klasę ułatwiająca mapowanie relacji na obiekty oraz kojarzenie encji (obiektu) z typowymi dla niego zapytaniami SQL (coś na wzór Named Queries dostępnego później w JPA). I tak, rozszerzając klasę `MappingSqlQuery`, umożliwiamy całkowite rozłączenie kodu SQL od logiki aplikacji. 
+
+[source, java]
+----          	
+			public 	class TaskMappingQuery extends MappingSqlQuery<Task> {            
+----   
+
+
+
+[source, java]
+----          	
+				public TaskMappingQuery(DataSource ds) {	super(ds, "select * from tasks");compile();}	@Override	protected Task mapRow(ResultSet rs, int rowNumber) throws SQLException {	Task t = new Task.Builder()	.withId(rs.getLong("task_id"))	.withTitle(rs.getString("title"))	.withDescription(rs.getString("description"))	.withDate(rs.getDate("startdate"))	.withDuration(rs.getInt("duration")).build();	return t;}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+Tak utworzoną klasę możemy z wykorzystać do pobierania danych z bazy. 
+
+[source, java]
+----          	
+			@Componentpublic 	class TasksService {	TaskMappingQuery query;	@Autowired	public void setDataSource(DataSource dataSource) {	 	this.query = new TaskMappingQuery(dataSource);}//..            
+----   
+
+
+
+[source, java]
+----          	
+				public List<Task> getTasks() throws Exception {	return query.execute();}}            
+----   
+
+Jak widać na powyższym przykładzie, kod serwisu znacznie się uprościł – zbliżając się poziomu czytelności oferowanego przez silniki ORM (np. Hibernate). Wykorzystanie iBatisPotężniejszym i bardziej elastycznym narzędziem jest iBatis. Jednakże jego konfiguracja wymaga kilku dodatkowych zabiegów. Przede wszystkim musimy dołączyć do projektu nowe biblioteki związane z samym SQL mapperem, który następnie musi zostać skonfigurowany. Obiekt będący reprezentacją relacji jest już utworzony, przy okazji przykładów z ORM, jak i wcześniejszych `SqlQuery` – możemy więc go ponownie wykorzystać. Pozostaje konfiguracja mapowania, którą umieszczamy w pliku [nazwa_encji].xml – czyli w naszym przypadku Task.xml. Kolejnym kroku definiujemy samego mappera w pliku sqlmap-config.xml i łączymy go ze Springiem, dodając odpowiedni wpisy w pliku konfiguracyjnym XML. 
+
+[source, java]
+----          	
+			<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE sqlMapPUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN""http://ibatis.apache.org/dtd/sql-map-2.dtd"><sqlMap namespace="Task">	<resultMap id="result" class="pl.devcastzone.spring.model.Task">	<result property="taskId" column="TASK_ID" columnIndex="1" />	<result property="title" column="TITLE" columnIndex="2" />	<result property="description" column="DESCRIPTION"columnIndex="3" />	<result property="date" column="STARTDATE" columnIndex="4" />	<result property="duration" column="DURATION" columnIndex="5" />	</resultMap>	<select id="getTasks" resultMap="result">select * from TASKS	</select>	<insert id="insertTask">insert into TASKS (TITLE, DESCRIPTION, STARTDATE, DURATION)values (#title#, #description#, #date#, #duration#)	</insert></sqlMap>            
+----   
+
+
+
+[source, java]
+----          	
+			<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL MAP Config 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">	<sqlMapConfig>	<sqlMap resource="META-INF/sqlmap/Task.xml" /></sqlMapConfig>            
+----   
+
+
+
+[source, java]
+----          	
+			<bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">	<property name="configLocation" value ="classpath:META-INF/sqlmap/sqlmap-config.xml" />	<property name="dataSource" ref="dataSource" /></bean>            
+----   
+
+Z tak przygotowaną aplikacją można zacząć modyfikację serwisu. 
+
+[source, java]
+----          	
+			@Componentpublic 	class TasksService {	@Autowired	SqlMapClient sqlMapClient;	public void addTask(Date startDate, int duration, String title,	String description) throws Exception {	Task t = new Task.Builder().withTitle(title).withDescription(description).withDate(startDate).withDuration(duration).build();	sqlMapClient.insert("insertTask", t);}            
+----   
+
+
+
+[source, java]
+----          	
+				public List<Task> getTasks() throws Exception {	return (List<Task>) sqlMapClient.queryForList("getTasks", null);}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+Zaletą iBatis, jest to, że wszystkie zapytania do bazy danych przechowywane są w zewnętrznym pliku konfiguracyjnym. Dzięki temu możliwe jest dostosowanie aplikacji do drobnych zmian w strukturze bazy danych, bez konieczności ponownej kompilacji całej aplikacji. W praktyce jednak, okazuje się, że bardzo często taka kompilacja jest konieczna, a zysk z rozdzielenia konfiguracji na kilka plików okazuje się być iluzoryczny. Najlepszym tego przykładem jest EJB i platforma JEE, która z biegiem czasu całkowicie odchodzi o zewnętrznych plików konfiguracyjnych, które okazały się być przerostem formy nad treścią. Oczywiście nie twierdzę, że narzędzia typu iBatis są zupełnie niepotrzebne; uważam że wprowadzając nową bibliotekę do systemu konieczne jest dokładne przeanalizowanie przypadków użycia oraz upewnienie się że funkcjonalność której potrzeba nie istnieje już wewnątrz frameworku. 
+		
+=== Słowem podsumowania
+
+W niniejszym module przedstawiłem dwa aspekty frameworku: dostęp do bazy danych oraz konfigurację transakcji, a zarazem pokazałem na przykładach jak wielka jest elastyczność frameworka i jak każdą rzecz można zrobić na więcej niż jeden sposób – w zależności od tego jakie są założenia projektu. Nie trzeba wizji rozwiązania dostosowywać do aktualnych możliwości (jak ma to miejsce np. w EJB), a framework jest narzędziem wspomagającym, a nie dominującym. 
+
+== Moduł 5: Walidacja
+Przykładowa aplikacja składa się obecnie z trzech warstw: bardzo ubogiego "widoku", warstwy „usług biznesowych” (pobierających i zapisujących dane) oraz warstwy dostępu do bazy danych. Każda z warstw realizuje konkretne zadania i nie wykracza po nie (prezentując przy tym bardzo dobrą separację: warstwa usług jest w pełni niezależna od przyjętej strategii dostępu do bazy danych). Są jednak wymagania, które w sposób wertykalny przecinają całą aplikację i muszę być zrealizowane na każdym etapie przetwarzania. Taką funkcjonalnością jest na przykład walidacja, którą zajmiemy się właśnie teraz. Walidacja, czyli sprawdzenie poprawności przesyłanych danych. Każda warstwa samodzielnie powinna zweryfikować czy dane które otrzymuje są zgodne z oczekiwaniami (z kontraktem) oraz w przypadku błędnych danych, powinna zasygnalizować klientowi odpowiedni błąd. Jest to pewne rozszerzenie podejścia programowania defensywnego, które nakazuje sprawdzenie poprawności danych przed przystąpieniem do operacji na nich. Spring Framework oferuje w tym miejscu bardzo bogaty zestaw narzędzi wspierających właśnie taką zaawansowaną weryfikację danych. 
+
+
+		
+=== Bean Validation
+
+Nie jest zaskoczeniem, że istnieje co najmniej kilka sposobów walidacji obiektów dostępnych we frameworku. Jako że autorzy frameworku bardzo duży nacisk kładą na kompatybilność wstecz, można skorzystać ze wszystkich historycznie dostępnych metod walidacji obiektów. Skupimy się jednak na najnowszej i najłatwiejszej metodzie, czyli implementacji standardu Java Bean Validation, opisanego w JSR-303. Spring wspiera ten standard, chociaż nie jest go referencyjną implementacją. Do poprawnego działania wymaga obecności np. referencyjnej implementacja standardu, tj. biblioteki hibernate-validatorJSR-303 standaryzuje sposób deklarowania reguł walidacyjnych na platformie Java. Odbywa się to poprzez adnotację, którymi oznaczamy pola modelu i na tym poziomie definiowane są reguły, które element modelu musi spełnić. W praktyce wygląda to niezwykle prosto i przykładowa, używana w aplikacji klasa modelu, przybierze następującą postać.
+
+[source, java]
+----          	
+			@Entity@Table (name = "tasks")public 	class Task {	@Id	@GeneratedValue	@Column(name = "task_id")	@NotNull	private long taskId;	@Temporal(TemporalType.DATE)	@Column(name = "startdate")	@NotNull	@Future	private Date date;	@Basic	@NotNull	@Min(value = 5*60*1000)	private int duration;	@NotNull	@Size(min = 1, max = 50)	private String title;	@NotNull	@Size(min = 1)	private String description;	//..}            
+----   
+
+Jak widać na przykładzie, nie ma przeszkód aby łączyć w jednej klasie modelu adnotację dotyczące bazy danych, jak i walidacji (a czasem nawet mapowanie obiektów na dokumenty XML). Niewątpliwą zaletą takiego podejścia jest przechowywanie efektywne, ponowne wykorzystanie już istniejącego kodu oraz przechowywanie wszystkich meta danych obiektów wraz z samym obiektem. Poprawia to znacznie czytelność kodu. Niestety ma też minusy – z czasem klasy potrafią urosnąć do monstrualnych rozmiarów, ich czytelność maleje, a narastają problemy z utrzymaniem takich klas. Wciąż jednak deklaratywna walidacja poprzez adnotację jest daleko czytelniejsza niż seria zagnieżdżonych wartości if i else. Tak zmodyfikowana klasa może być użyta do walidacji. W pierwszy kroku należy w pliku konfiguracyjnym wskazać, który walidator (udostępniany przez framework) pragniemy użyć, a następnie wstrzyknąć go do odpowiedniego serwisu. 
+
+[source, java]
+----          	
+			<bean id="validator" 	class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>            
+----   
+
+W tym momencie Spring daje nam wybór, czy korzystamy ze standardowego Bean Validation API i wstrzykujemy instancję `javax.validation.Validator` czy korzystamy z klasy dostarczonych przez framework (`org.springframework.validation.Validator`). Jako że szkolenie dotyczy Springa omówimy interfejs frameworka. Aby jednak standardom stało się zadość, użycie podstawowego API wyglądać będzie następująco.
+
+[source, java]
+----          	
+				public void addTask(Date startDate, int duration, String title,	String description) throws Exception {	Task t = new Task.Builder().withTitle(title).withDescription(description).withDate(startDate).withDuration(duration).build();            
+----   
+
+
+
+[source, java]
+----          	
+				Set<ConstraintViolation<Task>> errors = validator.validate(t);	if (errors.size() > 0) {	System.out.println("Validation errors");	for (ConstraintViolation<Task> e : errors)	System.out.println(" * " + e.getMessage());}	sessionFactory.getCurrentSession().save(t);}            
+----   
+
+Przed zapisaniem do bazy obiekt Task został sprawdzony pod kątem poprawności i ewentualne błędy zostały wyświetlone w konsoli. Istotne jest, że użycie standardowego API wymaga dołączenia do projektu walidatora zgodnego z API (np. modułu hibernate-validator). W przeciwnym wypadku walidacja nie zadziała, mimo że przywołana w konfiguracji klasa implementuje interfejs `javax.validation.Validator`.Ta sama operacja przy użyciu komponentów Springa wyglądać będzie odrobinę inaczej. Inny jest interfejs klasy walidatora, a także wymagane jest przygotowanie a priori struktury danych dla ewentualnych błędów. Użyta została klasa `BindException`, która jest domyślną implementacją interfejsu `Error` (o którym więcej za chwilę). Klasa ta standardowo inicjowana jest przez framework i w przypadku takich prostych zastosowań wydaje się to być nieco na wyrost. Niemniej jednak, np. w aplikacji webowej taka konstrukcja okazuje się być o wiele bardziej elastyczna niż standardowe `ConstraintViolation`.
+
+[source, java]
+----          	
+				public void addTask(Date startDate, int duration, String title,	String description) throws Exception {	Task t = new Task.Builder().withTitle(title).withDescription(description).withDate(startDate).withDuration(duration).build();            
+----   
+
+
+
+[source, java]
+----          	
+				BindException errors = new BindException(t, "task");	validator.validate(t, errors);	if (errors.hasErrors()) {	System.out.println("Validation errors:");	for (Object e : errors.getAllErrors()) {	System.out.println(" * " + e);}}	sessionFactory.getCurrentSession().save(t);}            
+----   
+
+Ostatnią istotną z punktu widzenia programisty kwestią jest to, że w momencie dołączenia do projektu komponentów odpowiedzialnych za walidację, uruchamiane są wewnętrzne mechanizmy Springa, które uniemożliwiają zapisanie niepoprawnych danych do bazy. Mimo, że po wykryciu błędów walidacji wywołanie metody nie zostało przerwane, Spring sam zadbał o to aby niepoprawne dane nie zostały zapisane i poprzez odpowiednie klasy nasłuchujące zwrócił wyjątek. Nastąpiło to niezależnie od tego czy użyta została standardowa biblioteka JSR-303 czy komponenty związane z frameworkiem. 
+		
+=== Błędy walidacji i interfejs Error
+
+W sytuacji, gdy użyte zostały narzędzia do walidacji dostarczane przez framework, konieczne stało się przygotowanie struktury danych, w której przechowywane i przekazywane były błędy walidacji. Rzadko kiedy w aplikacjach spotyka się tak explicite wykorzystanie walidacji dostarczanej przez Springa. Tak jak wspominałem, w prostszych przypadkach wykorzystuje się standardowe podejście oferowane przez standard Bean Validation. Walidacja z wykorzystaniem interfejsów frameworka okazuje się być szczególnie pomocna np. przy obsłudze formularzy na stronach internetowych. Wykorzystywane wtedy są mechanizmy DataBinding i Spring samodzielnie zajmuje się tworzeniem obiektów, wypełnianiem wartości oraz walidacją. Niemniej jednak, niezależnie od wybranego sposobu walidacji, błędy zawsze zwracane są w tej takiej samej strukturze, gdzie kluczem jest nazwa atrybutu (patrząc od głównego korzenia). Na tej podstawie możliwe jest odczytanie wyniku walidacji (komunikat o błędzie), jak i wartości, która zostały odrzucone.We wszystkich powyższych przykładach informacje o błędach były na sztywno zapisane w kodzie programu. Nie jest to podejście zalecanie, szczególnie gdy planujemy aby tworzony system wspierał więcej niż jeden język. W takiej sytuacji, istnieje możliwość wykorzystania interfejsu `MessageBundle` i przechowania treści wiadomości w zewnętrznym pliku, posługując się w kodzie jedynie kluczem. Aby móc skorzystać z takiej własności frameworka musimy kolejny komponent w konfiguracji tworzonej aplikacji.
+
+[source, java]
+----          	
+			<bean id="messageSource" 	class="org.springframework.context.support.ReloadableResourceBundleMessageSource">	<property name="basename" value="classpath:messages" />	<property name="defaultEncoding" value="UTF-8"/></bean>            
+----   
+
+Powyższa instrukcja informuje framework, że przygotowane są wersje językowe, których należy użyć w aplikacji. Poprzez atrybuty basename, wskazujemy lokalizację plików z tłumaczeniami. Jest to bazowa nazwa pliku, gdzie dla każdego kolejnego języka dodawana jest odpowiednia końcówka (np. `messages_en.properties`, `messages_pl.properties`). Jeżeli korzystamy z webowego frameworka (np. Spring MVC) to odpowiednie wartości mogą być wybierane automatycznie, na bazie danych przekazywanych przez przeglądarkę (takich jak domyślna lokalizacja). Jeżeli – tak jak w przypadku przykładowej aplikacji - praca związana z wyświetlaniem informacji wykonywana jest ręcznie, przez programistę, wykorzystać należy komponent `MessageSource`. 
+
+[source, java]
+----          	
+				@Resource	MessageSource messages;            
+----   
+
+
+
+[source, java]
+----          	
+				//..	String englishMessage = messages.getMessage(	e.getCode() + "." + e.getObjectName() + "." + e.getField(), 	null, Locale.ENGLISH);	System.out.println(" * " + englishMessage);	String polishMessage = messages.getMessage(	e.getCode() + "." + e.getObjectName() + "." + e.getField(), 	null, new Locale("PL"));System.out.println(" * " + polishMessage);            
+----   
+
+Konstrukcja pliku message_xx.properties jest dowolna, ważne jest jedynie aby klucze zgadzały się na linii aplikacji, plik z tłumaczeniami. Konwencja sugeruje wykorzystanie nazewnictwa [nazwa_błedu].[obiekt].[atrybut_obiektu] (i taka konwencja wykorzystywana jest np. w aplikacjach webowych). Dlatego też w powyższym przykładzie plik wyglądać będzie następująco (odpowiednio dla języka angielskiego i polskiego). 
+
+[source, java]
+----          	
+				Future.task.date = Invalid date; expected date from the future            
+----   
+
+Future.task.date = Nieprawid\u0142owa data.
+
+== Moduł 6: Aspekty
+Przy okazji omawiania walidacji pojawiły się pewne kwestie, które moim zdaniem wymagają dokładniejszej analizy. Chodzi o sytuację, w której Spring (niezależnie od programisty) uniemożliwiał zapis danych, które nie przeszły walidacji. Co ciekawe, nic podobnego się nie stało, gdy walidacja nie była używana – błędne dane mogły być bez większych przeszkód zapisywane do bazy. Jeżeli przyglądniemy się zwróconemu wyjątkowi, zauważymy że nie pochodzi on z klasy odpowiedzialnej za zapis do bazy danych (a takie mogłoby być pierwsze skojarzenie). Może to nawet lepiej, bo nie burzy to zasady pojedynczej odpowiedzialności w programowaniu obiektowym (ang. single responsibility principle). W naszym konkretnym przypadku zadziałały mechanizmy Hibernate – czyli silnika mapowania obiektowo relacyjnego, który wykorzystywany został do zapisu danych. Niemniej jednak, analogicznego zachowania można oczekiwać korzystając z innych narzędzi realizujących dostęp do bazy danych. Np. korzystając z sql mappera (takiego jak iBatis) aż prosiłoby się o analogiczną funkcjonalność. 
+
+W jaki sposób zatem, klasa zupełnie niezwiązana z zapisem danych, została wywołana i zwróciła wyjątek umożliwiający komunikację z bazą danych? Wykorzystana została tutaj funkcjonalność frameworka, czyli możliwość programowania za pomocą aspektów. 
+
+
+		
+=== Czym są aspekty?
+
+Programowanie z wykorzystaniem aspektów umożliwia dekorowanie klasy dodatkowymi funkcjami, bez ingerencji w samą metodę. Pewnym specyficznym użyciem takiej architektury są filtry w aplikacjach webowych. Aspekty umożliwiają opakowanie wywołania metody dodatkową logiką, która zostanie wywołana przed lub po głównej (obudowywanej) metodzie, jak też może zablokować jej wywołanie w ogóle. Taka architektura jest szczególnie przydatna podczas implementacji wymagań, które wykraczają poza jedną warstwę systemu. Może być to na przykład logowanie, bezpieczeństwo, auditing lub pokazana na wcześniejszych przykładach walidacja. Wykorzystanie aspektów umożliwia modularyzację takich funkcjonalności (które w innym przypadku rozsiane byłby po różnych komponentach całej aplikacji). 
+
+Programowanie aspektowe wprowadza szereg nowych pojęć (poza samą nazwą), które warto opisać przed wykorzystaniem tego podejścia:
+
+* Advice (porada): akcja, która jest wykonywana w ramach aspektu.
+* Join point (czyli punkt złączenia): moment, w którym uruchamiana jest porada, z reguły jest to wywołanie określonej metody. 
+* Pointcut (punkt przecięcia): predykat, który musi zostać spełniony, aby nastąpiło przecięcie. Język aspektów definiuje szereg zachowań, które można wykorzystać. W najprostszym i najpopularniejszym przypadku, aspekt uzależniony jest od wykonania metody. 
+* Aspekt: jest to byt łączący wszystkie trzy pojęcia w całość. Aspekt definiuje kod, który zostanie uruchomiany w momencie zaistnienia zdarzenia, określonego w punkcie przecięcia dla metod (lub obiektów) określonych w punkcie złączenia. 
+
+Taka definicje mogą wydawać się mało intuicyjne, jednak wszystko stanie się jasne, jeżeli przyglądniemy się przykładom. Nim to nastąpi, musimy jeszcze rozróżnić pięć rodzajów porad:
+
+* Before advice: porada uruchamiana jest przed akcją określoną w punkcie złączenia, ale nie ma możliwości jej zablokowania.
+* After returning advice: porada uruchamiana jest w momencie poprawnego zakończenia operacji zdefiniowanej w punkcie złączenia (metody nie zwróciła wyjątku).
+* After throwing advice: analogicznie do poprzedniego przypadku, z tą różnicą że akcja wywoływana jest w momencie zwrócenia wyjątku przez akcję opisaną w punkcie złączenia.
+* After advice: porada łącząca obie poprzednie, czyli wykonywana zawsze po wywołaniu metody opisanej w punkcie złączenia (niezależnie czy wywołanie jest poprawne, czy zwrócony został wyjątek). 
+* Around advice: najpotężniejszy typ porad, uruchamiany przed wywołaniem akcji określonej w punkcie złączenia, mogący zablokować wywołanie metody lub dodatkowo zinterpretować zwrócony wynik. 
+
+
+		
+=== Aspekty niskopoziomowe
+
+Rozumienie, do czego i w jaki sposób używać aspektów – to jedno. Omówienie w jaki sposób framework implementuje ten mechanizm – to odmienna kwestia. Jeżeli nie używamy aspektów, klient operuje bezpośrednio na metodach komponentu, co można obrazowo przedstawić na schemacie.
+
+NOTE:: Insert original images 
+
+
+Aspekty działają w sposób przeźroczysty dla użytkownika, bazując na wzorcu projektowym proxy. 	W momencie, gdy dla któregokolwiek punktu przecięcia zdefiniowana zostanie porada (tzn. kod wywoływany dodatkowo, poza samą logiką komponentu), framework utworzy obiekt proxy, który będzie pośredniczył w komunikacji pomiędzy komponentem a klientem. Zarówno proxy, jak i komponent współdzielą ten sam interfejs – umożliwiają wywołanie takich samych metod, jednakże odpowiedzialnością proxy jest funkcjonalność związana z aspektem, a logika biznesowa delegowana jest do oryginalnego komponentu. Można to obrazowo przedstawić na wykresie. 
+
+
+
+NOTE:: Insert original images 
+
+
+
+		
+=== Praktyczne wykorzystanie aspektów
+
+Aspekty są nierozerwalnie związane ze Springiem, wykorzystywane w bardzo wielu elementach frameworku, często bez wiedzy użytkownika. Można zatem podzielić komponenty na dwie grupy: elementy frameworka umożliwiające deklaratywne wykorzystanie serwisów znanych z platformy JEE (np. transakcji – które są najistotniejszym serwisem wykorzystującym takie podejście) oraz indywidualnie tworzone przez użytkownika funkcjonalności. W przypadku tych pierwszych rola programisty sprowadza się do deklaratywnej konfiguracji już istniejących komponentów. Jeżeli jednak decydujemy się na pisanie własnych aspektów, pracy jest trochę więcej – i tej grupie skupimy się w niniejszym rozdziale. Wyobraźmy sobie sytuację, w której w momencie dodania walidatora do kontekstu aplikacji, uruchomione zostają dodatkowe komponenty, których zadaniem jest pilnowanie poprawności przechowywanych danych. Odbywałoby się to poza głównym ciągiem przetwarzania danych, niejako dodatkowo – właśnie do tego celu służą aspekty. 
+
+Jak w wielu poprzednich przykładach, skupimy się na konfiguracji poprzez adnotację, aby w dalszej części szkolenia przepisać je przy pomocy konfiguracji XML. 
+
+
+		
+=== Przygotowanie i konfiguracja porady
+
+Jeżeli decydujemy się na używanie adnotacji `@AspectJ`, to konfiguracja porad wygląda analogicznie do budowania interceptorów na platformie JEE (z tą różnicą, że interceptory zostały ograniczone tylko i wyłącznie do porad Around Advice). Należy także stosować zasady budowy takiej porady: porady nie wymagają implementacji żadnych interfejsów, jedynie zadeklarowania publicznej metody, której argumentem jest obiekt typu `org.aspectj.lang.JoinPoint` (umożliwia do dostęp do kontekstu wywołania i argumentów). Dodatkowo, warto zadbać o to aby metoda interceptora zwracała typ `Object` i deklarowała uniwersalny wyjątek `Throwable`. Wynika to z faktu, że podczas deklarowania interceptora nigdy nie ma pewności, gdzie jego funkcjonalność zostanie wykorzystana. Poprzez zadeklarowanie metody zgodnie z powyższymi zaleceniami, nie należy się obawiać że działania interceptora jakkolwiek złamie kontrakt zadeklarowany przez wywoływaną metodę (a byłoby to niepożądane). Oczywiście, jeżeli będziemy korzystać z innych porad niż Around Invoke – to nie ma konieczności deklarowania wyjątków lub zwracać obiekty o uniwersalnych typach. Przygotowywany aspekt będzie sprawdzał poprawność danych przekazanych do metody insert sqlMappera, za pomocą zdefiniowanego wcześniej walidatora używanego i zdefiniowanego w aplikacji. 
+
+[source, java]
+----          	
+			@Aspect@Componentpublic 	class ValidationCheckAdvice {	@Autowired	private Validator validator;	@Around("execution(* com.ibatis.sqlmap.client.SqlMapExecutor.insert(..))")	public Object validationCheck(ProceedingJoinPoint joinPoint) throws Throwable {	System.out.println("validationCheck() is running!");String procedureName = (String) joinPoint.getArgs()[0];Object o = joinPoint.getArgs()[1];	BindException errors = new BindException(o, procedureName);	validator.validate(o, errors);	if (errors.hasErrors()) {	System.out.println(errors.getAllErrors());	throw new RuntimeException("Cannot insert a not valid object");}	return joinPoint.proceed();}}            
+----   
+
+W powyższym przykładzie wykorzystujemy adnotację AspectJ, zatem konieczne jest poinformowanie o tym frameworka; obywa się to poprzez jeden, dodatkowy wpis w konfiguracji.
+
+[source, java]
+----          	
+				<aop:aspectj-autoproxy/>            
+----   
+
+Zacznijmy omawianie przykładu od początku. Adnotacją `@Aspect` informujemy kontener o typie komponentu, a poprzez dodanie adnotacji komponent powodujemy, że aspekt jak automatycznie odnajdowany w procesie skanowania. Bez tej dodatkowej adnotacji, konieczne byłoby jawne dodanie aspektu do kontekstu, w pliku konfiguracyjnym. Nie różniłoby się to w żaden sposób od dodania każdego innego komponentu.
+
+[source, java]
+----          	
+				<bean id="validationCheckAvice" class="pl.devcastzone.spring.todo.aop.ValidationCheckAdvice"/>            
+----   
+
+Kolejna adnotacja to `@Around`, która definiuje zarówno rodzaj porady, jak i sam punkt złączenia. Możliwe jest rozłączenie tych dwóch operacji (jeżeli pragnęlibyśmy tę samą metodę objąć więcej niż jednym aspektem) poprzez użycie adnotacji `@Pointcut`. W takim przypadku, późniejsze porady będę definiowane w oparciu o nazwę metody oznaczonej adnotacją `@Pointcut`.
+
+[source, java]
+----          	
+				@Pointcut("execution(* com.ibatis.sqlmap.client.SqlMapExecutor.insert(..))")	public void sqlMapperInsert() {}	@Around("sqlMapperInsert()")	public Object validationCheck(ProceedingJoinPoint joinPoint) throws Throwable {	System.out.println("validationCheck() is running!");String procedureName = (String) joinPoint.getArgs()[0];Object o = joinPoint.getArgs()[1];	BindException errors = new BindException(o, procedureName);	validator.validate(o, errors);	if (errors.hasErrors()) {	System.out.println(errors.getAllErrors());	throw new RuntimeException("Cannot insert a not valid object");}	return joinPoint.proceed();}	@AfterReturning("sqlMapperInsert()")	public void afterInsert() {	System.out.println("Successful insert");	System.out.println("*******");}            
+----   
+
+Powyższy przykład ukazuje jeszcze jedną właściwość aspektów: modyfikować można nie tylko wewnętrzne klasy, napisane przez programistę. Aspekty dotyczą wszelkich możliwych klas – tutaj z pakietu iBatis. Dodatkowo, widzimy że aspekt podlega takim samym prawom jak każdy inny komponent Spring i można wstrzykiwać do niego inne komponenty (jak pokazany w przykładzie walidator). W powyższy sposób, dodatkowo zabezpieczyliśmy naszą aplikację, uniemożliwiając zapis niepoprawnych danych; funkcjonalność typową dla silników ORM (np. Hibernate) udało się uzyskać w sql mapperze iBatis. 
+		
+=== Definiowane punktów przecięcia
+
+Dla osób niemających wcześniej kontaktu z programowaniem aspektowym sposób definiowania punktów przecięcia może nie być intuicyjny. Warto zatem poświęcić chwilę na analizę sposobu tworzenia wyrażeń określających punkty złączenia. Wszystkie punkty przecięcia pisane są według tej samej reguły: akcja(typ dla którego akcja jest wykonywana). Typy określane są w typowy dla Javy sposób; jest to albo pełna nazwa klasy (interfejsu) wraz z pakietem lub pełna sygnatura metody. O ile określenie typu jest jednoznaczne (`java.io.Serializable`), to w przypadku metod możliwe jest zastosowanie wieloznaczności (w postaci gwiazdek). Zatem, w pełni określona metoda będzie miała następującą postać: `void 	pl.devcastzone.spring.service.FooService.action (java.lang.String)`. Z tym że możliwe jest zastosowanie konstrukcji wieloznacznej:* możliwe jest użycie modyfikatory dostępu (public / protected), a także static itp. 
+* void pl.devcastzone.spring.service.FooService.action (..) oznaczać będzie wywołanie wszystkich metod – niezależnie od typów argumentu.
+* pl.devcastzone.spring.service.FooService.action (..) oznaczać będzie wywołanie wszystkich metod action – niezależnie od typu argumentu oraz zwracanego typu.
+* pl.devcastzone.spring.service.FooService.* (..) oznacza wszystkie metody klasy FooService.
+* pl.devcastzone.spring.service.*.* (..) oznacza wszystkie metody w pakiecie serwis.
+* pl.devcastzone.spring.service..*.* (..) oznacza wszystkie metody w pakiecie serwis oraz w pod pakietach.
+
+Punkty łączenia zdefiniowane tak jak powyżej, używane są do konfiguracji akcji (i w ten sposób zdeklarowany jest komplety punkt przecięcie – ang. pointcut). Spring umożliwia użycie następujących akcji `AspectJ` (tych akcji jest znacznie więcej, jednakże użycie którejkolwiek akcji `AspectJ` spoza poniższej listy spowoduje wyjątek `IllegalArgumentException`):* execution, dla metod – określa wywołanie metody pasującej do szablonu,
+* within, dla pakietów – określa wywołanie którejkolwiek punktu łączenia w pakiecie,
+* target, dla typów – ogranicza punkty łączenia do obiektów implementujących zadany interfejs (będące w relacji instanceof), 
+* this, dla typów – podobnie jak w poprzednim przypadku, z tą różnicą, że interfejs musi być implementowany przez obiekt będący proxy,
+* args, dla typów – organicza punkty łączenia do metod, gdzie argumenty to klasy wymienionego typu. 
+
+Jeżeli akcję within, target lub args poprzedzimy znakiem '@' (@target) – akcje będą odnosiły się do adnotacji. Powyższe rozważania z oczywistych względów nie wyczerpują tematu, stanowią tylko wprowadzenie do bardzo rozległego tematu. W ogromnej większości przypadków wystarczająca będzie umiejętność rozszerzenia wywołania poszczególnych metod (tak jak zrobione zostało to w przykładzie z walidacją zapisywanych danych), a tworzone aspekty będą na kształt interceptorów znanych ze specyfikacji EJB 3.0. 
+
+== Moduł 7: Warstwa Web
+W poprzednich modułach skupialiśmy się głównie na warstwach biznesowych, realizując pewne operacje związane np. z dostępem do bazy danych. Zupełnie pominięta została kwestia interakcji z użytkownikiem – wszystkie komunikaty wyświetlane były po prostu w konsoli systemowej. Komunikacja z użytkownikiem nie została pominięta lub zignorowana; wprowadzenie jej na wczesnym etapie budowania aplikacji, mogłoby znacznie zaciemnić obraz i wprowadzić niepotrzebne zamieszanie. Teraz gdy już potrafimy składać aplikację z komponentów oraz rozwiązywać zależności między nimi, możemy z powodzeniem dorobić do naszej aplikacji interfejs. W tym module zaprezentuje kilka sposób na udostępnienie aplikacji z wykorzystaniem protokołu HTTP. Specjalnie nie użyłem sformułowania strona WWW, ponieważ nie jest to jedyna opcja, którą omówimy w niniejszym module.
+
+Na początek skupimy się na elemencie frameworka, czyli Spring MVC; implementacji wzorca model – widok – kontroler (ang. model – view – controller). Omówione zostanie tworzenie aplikacji WWW z wykorzystaniem istniejących komponentów biznesowych (jako tzw. backend) oraz ponowne użycie już opanowanych technik (jak np. walidacja) w kontekście aplikacji WWW. 
+
+Początkowo widoki będą budowane w czystym JSP (i jest to dla prostych aplikacji zupełnie wystarczające). Zasygnalizuje jednak możliwość użycia innych narzędzi do tworzenia widoków, takich jak Tiles lub Velocity. 
+
+Spring jako narzędzie niezwykle elastycznie nie wymusza na programiście użycia tylko i wyłączenie jednej konkretnej implementacji wzorca MVC, a możliwe jest połączenia komponentów z różnymi innymi frameworkami WWW (takimi jak Struts, Tapestry, WebWorks). 
+
+Na sam koniec pozbędziemy się zupełnie widoków i użyjemy istniejących komponentów do skonstruowania API umożliwiające komunikację z aplikacją poprzez wiadomości XML. 
+
+
+		
+=== Nowy projekt webowy
+
+Na początek przygotujemy środowisko, na którym będziemy osadzać aplikację. Użyjemy serwer Apache Tomcat w wersji 6 (czyli kontenera serweltów, chociaż serwletów jako takich jawnie póki co nie będziemy wykorzystywać). Stworzymy także nowy projekt: aplikację webową. Jeżeli używamy SpringTool Suite, to możemy skorzystać z istniejących szablonów, gdzie wybieramy Spring MVC Project. Środowisko utworzy nam nowy projekt, wraz ze strukturą oraz z predefiniowanymi zależnościami. Aplikacja WWW opata o framework Spring nie różni się swoją strukturą od innych aplikacji wykorzystujących serwlety: w katalogu WEB-INF znajduje się plik web.xml, który jest podstawową konfiguracją aplikacji (tzw. deskryptorem wdrożenia). Dodatkowo, wzorzec wygenerował domyślną konfigurację oraz kilka podstawowych plików. Całość stanowi działający szkielet aplikacji, który można wdrożyć na serwer. Nim jednak to zrobimy, przyjrzyjmy sie poszczególnym elementom aplikacji. Jeżeli decydujemy się wykorzystać Spring MVC, to po pierwsze zmienia się sposób obsługi przychodzących do serwera żądań. W klasycznym ujęciu, serwlet jest to singleton, który bezstanowo obsługuje wiele przychodzących żądań. Poprzez mapowanie w pliku konfiguracyjnym web.xml, kontener serwletów wie, którą klasę skojarzyć z adresem URL i obsługa kierowana jest bezpośrednio do serweletu. Całość przetwarzania może zostać zamknięta w serwlecie (np. cała strona HTML może zostać wygenerowana po stronie Javy) lub też serwlet może przekazać generowanie samej strony do pliku JSP. 
+
+NOTE:: Insert original images 
+
+
+Wykorzystanie Spring MVC zmienia ten paradygmat. Jak widać na poniższej ilustracji, całość rozwiązania oparta jest o wzorzec front controller; wszystkie żądania obsługiwane są przez jeden serwlet, który z kolei zarządzana przekazywaniem zadań po odpowiednich kontrolerów i widoków. 
+
+NOTE:: Insert original images 
+
+
+Jeżeli przyglądniemy się wygenerowanej konfiguracji w deskryptorze wdrożenia web.xml, to w sekcji odpowiedzialnej za mapowanie serwletów zobaczymy tylko pojedynczy wpis, mapujący wszystkie przychodzące żądania na klasę `DispatcherServlet`, klasę Front Controllera. 
+
+[source, java]
+----          	
+			<!-- Processes application requests --><servlet><servlet-name>appServlet</servlet-name><servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class><init-param><param-name>contextConfigLocation</param-name><param-value>/WEB-INF/spring/appServlet/servlet-context.xml</param-value></init-param><load-on-startup>1</load-on-startup></servlet><servlet-mapping><servlet-name>appServlet</servlet-name><url-pattern>/</url-pattern></servlet-mapping>            
+----   
+
+Dodatkowy parametr konfiguracyjny serwletu to lokalizacja pliku konfiguracyjnego. Zwyczajowo, konfiguracja przechowywana poszukiwana jest w pliku [nazwa serwletu]-servlet.xml, w katalogu WEB-INF. Można jednak, jak na powyższym przykładzie, zmienić jego lokalizację. W pliku tym znajduje się konfiguracja widoków, kontrolerów, obsługa wyjątków, konfiguracja lokalizacji – konfiguracja całej warstwy związanej z webową częścią aplikacji. Jest to konfiguracja klasy `WebApplicationContext`, który posiada dostęp to wszystkich uprzednio zdefiniowanych komponentów biznesowych oraz tworzy własne (tylko odnoszące się do kontekstu WWW). Poza powyższym fragmentem, w pliku web.xml znajdują się jeszcze dwa dodatkowe parametry konfiguracyjne: parametr konfiguracyjny wskazujący na plik root-context.xml oraz definicja klasy nasłuchującej (ang. listerner) `ContextLoaderListener`.
+
+[source, java]
+----          	
+			<!-- The definition of the Root Spring Container --> <!-- shared by all Servlets and Filters --><context-param><param-name>contextConfigLocation</param-name><param-value>/WEB-INF/spring/root-context.xml</param-value></context-param><!-- Creates the Spring Container shared by all Servlets and Filters --><listener><listener-class>org.springframework.web.context.ContextLoaderListener</listener-class></listener>            
+----   
+
+Jeżeli decydujemy się tylko i wyłącznie na korzystanie ze Spring MVC powyższe elementy nie są z naszego punktu widzenia tak bardzo istotne. Teoretycznie całą konfigurację można umieścić w pliku servlet-context.xml. Nie jest to jednak rozwiązanie najtrafniejsze, zaleca się bowiem dzielenie plików konfiguracyjnych na mniejsze elementy (wprowadzenie pewnej granulacji, o której więcej będę mówił w dalszych modułach). `ContextLoaderListener` umożliwia połączenie komponentów biznesowych napisanych z pomocą Springa, z dowolnym frameworkiem MVC, takim jak Struts czy WebWork. Klasa `ContextLoaderListener` tworzy `WebApplicationContext` (czyli dokładnie to samo co `DispatcherServlet`), z tym że samą obsługą żądań nie zajmuje się Front Controller i realizowana jest ona w sposób wybrany przez programistę. Na początek skupimy się na wykorzystaniu Spring MVC i do alternatywnych sposóbów konfiguracji kontekstu wrócimy w dalszej części modułu. 
+		
+=== Hello Web Spring
+
+Poza plikiem web.xml wzorzec utworzył także kilka innych plików: klasę `HomeController`, dwa wspomniane powyżej pliki konfiguracyjne (root-context.xml i servlet-context.xml) oraz przykładowy widok home.jsp. Bez wgłębiania się w szczegóły, spróbujmy najpierw uruchomić aplikację. W pierwszym kroku musimy skonfigurować serwer: w widoku Servers wybieramy nowy serwer – Apache Tomcat 6. W ostatnim kroku konfiguracji dodajemy do serwera naszą aplikację webową i uruchamiamy serwer. Środowisko samo dba o odpowiednią kompozycję pliku wdrożenia, kopiuje je do katalogu webapps serwera i uruchamia samego Tomcata. Jeżeli poprzez przeglądarkę wyświetlimy stronę 
+		link:http://localhost:8080/todo-list-webapp[]
+	 (todo-list-webapp to nazwa przykładowej aplikacji), zobaczymy napis „Hello World!” oraz aktualną godzinę. Skoro aplikacja uruchomiła się poprawnie, możemy przeanalizować co się wydarzyło. Jak już opisywałem, jedynym serwletem zdefiniowanym w aplikacji jest front controller – czyli `DispatcherServlet`, jego konfiguracja znajduje się w pliku servlet-context.xml. Poza znaną z poprzednich plików z dyrektywą component-scan nakazującą skanowanie pakietów w poszukiwaniu adnotacji konfiguracyjnych, w pliku znajdziemy kilka dodatkowych konfiguracji: umożliwienie konfiguracji aplikacji poprzez adnotację (w analogiczny sposób jak miało to miejsce przy okazji omawianych we wcześniejszych modułach komponentów) oraz konfiguracja komponentu ViewResolver, odpowiadającego za poszukiwanie odpowiednich plików jsp w obrębie aplikacji. 
+
+[source, java]
+----          	
+			<!-- Enables the Spring MVC @Controller programming model --><annotation-driven />            
+----   
+
+
+
+[source, java]
+----          	
+			<!-- Resolves views selected for rendering by @Controllers to --> <!-- .jsp resources in the /WEB-INF/views directory --><beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"><beans:property name="prefix" value="/WEB-INF/views/" /><beans:property name="suffix" value=".jsp" /></beans:bean>            
+----   
+
+W momencie uruchamiania kontenera, skanowane są pakiety w poszukiwaniu komponentów oznaczonych adnotacją `@Controller`. W istniejącym szkielecie aplikacji istnieje tylko jedna klasa tak oznaczona: `HomeController`, do której zostało skierowane przychodzące żądanie. "Logika biznesowa" zawarta jest w metodzie home controllera, natomiast zwrócona przez metodę wartość "home" jest informacją dla komponentu `ViewResolver`, że należy wygenerować widok z pliku /WEB-INF/views/home.jsp – zgodnie z konfiguracją powyżej. Po wykonaniu tej operacji zawartość strony zostaje zwrócona do użytkownika. To właśnie kontrolery i widoki są sercem aplikacji i konstruując te komponenty programista spędza najwięcej czasu. Omówione pliki konfiguracyjne (w przypadku konfiguracji opartej o adnotację) przez większość czasu pozostają niezmienione – stanowią ramy aplikacji które wypełnia się logiką zawartą właśnie w kontrolerach. 
+		
+=== Kontroler i widok
+
+Dotychczas nie napracowaliśmy się zbytnio, ponieważ całą aplikacja została wygenerowana przez środowisko. Nim jednak przystąpimy do tworzenia własnych kontrolerów, spójrzmy na już utworzony `HomeController`. Na początek najistotniejsze są dwie adnotacje: wspomniana `@Controller` oraz `@RequestMapping`.
+
+[source, java]
+----          	
+			@Controllerpublic class HomeController {//..@RequestMapping(value = "/", method = RequestMethod.GET)public String home(Locale locale, Model model) {//..model.addAttribute("serverTime", formattedDate );return "home";}}            
+----   
+
+Pierwsza z wymienionych adnotacji jest informacją dla skanera pakietów, że ma do czynienia z kontrolerem. Natomiast poprzez `@RequestMapping`, rejestrowana jest obsługa konkretnego typu żądania (w tym przypadku metody GET dla bazowego URL "/"). Jak już wcześniej zasygnalizowałem, zwrócona wartość typu String jest nazwą widoku, który zostanie wygenerowany. Sam widok jest niezwykle prosty i dla osób znającej podstawy języka HTML nie wymaga dodatkowego omówienia. 
+
+[source, java]
+----          	
+			<html><head><title>Home</title></head><body><h1>Hello world! 	</h1>            
+----   
+
+
+
+[source, java]
+----          	
+			<P> 	The time on the server is ${serverTime}. </P></body></html>            
+----   
+
+Jedną rzeczą potencjalnie zwracającą uwagę jest fragment ${serverTime}, który wyświetla aktualny czas, zdefiniowany uprzednio w metodzie kontrolera. Komunikacja pomiędzy kontrolerem a widokiem odbywa się poprzez obiekt Model, który przekazany został w parametrze metody kontrolera (Model.addAttribute()). Sam kontroler przyjmuje dwa parametry: `Local` i wspomniany już `Model`. Nie są to jedynie możliwości, a lista potencjalnych argumentów jest znacząca i bardzo dokładnie opisana w dokumentacji. Z naszego punktu widzenia najistotniejsza jest adnotacja `@RequestParam`. Możemy ją oznaczyć dowolny obiekt będący parametrem obsługiwanego żądania. Siłą rzeczy (niejako z definicji) parametry mogą być jedynie prostymi typami lub ich obiektowymi odpowiednikami. Jeżeli zatem pragnęlibyśmy, aby istniejąca powitała nas imieniem, a nie suchym Hello World, możemy spróbować przekazać imię jako parametr. Jeżeli pragniemy tylko wyświetlić parametr na ekranie, to możemy po prostu dopisać w odpowiednim miejscu pliku JSP ${param.name}. Prawdziwa wartość, objawia się jednak gdy potrzebujemy skorzystać z parametru w kontrolerze. Metoda kontrolera przyjmie wtedy nieco zmienioną postać. 
+
+[source, java]
+----          	
+			@RequestMapping(value = "/", method = RequestMethod.GET)public String home(@RequestParam("name") String name, Locale locale, Model model) {//..}            
+----   
+
+Nie jesteśmy także ograniczenia do prostego ciągu znaków, który zwraca metoda kontrolera. Framework przewiduje, że może to być jeden z wielu typów: `Model`, `ModelAndView` (który umożliwia przekazanie atrybutów do widoku jak również jawne określenie, który widok ma zostać wywołany), `Map` (mapa klucz – wartość parametrów przekazanych widokowi) itd. 
+		
+=== Kontroler a komponent
+
+Kontroler MVC jest takim samym komponentem Spring, jak omawiane w poprzednich modułach komponenty biznesowe. Znaczy się, podlega tym samym prawom wstrzykiwania i rozwiązywania zależności. Oznacza to że możemy użyć w aplikacji webowej, komponentów utworzonych w poprzednich modułach. Jako że dotychczas zajmowaliśmy się dodawanie zadań do listy "todo" i wyświetlaniem tych zadań – użyjmy ponownie tych samych komponentów aby wyświetlić zadania w przeglądarce.Jeżeli poprzednio utworzoną aplikację potraktujemy jako bibliotekę i dołączymy ją do projektu w postaci pliku jar, to ponowne wykorzystanie istniejącej konfiguracji staje się dziecinnie proste. W pliku servlet-context.xml dopisujemy linijki importujące poszczególne elementy modułu.
+
+[source, java]
+----          	
+			<beans:import resource="classpath:META-INF/spring/app-properties.xml"/><beans:import resource="classpath:META-INF/spring/app-context-db.xml"/><beans:import resource="classpath:META-INF/spring/app-context.xml"/>            
+----   
+
+Po przeładowaniu się kontekstu, wśród zainicjowanych komponentów zobaczymy znany z poprzednich części taskService. Możemy pokusić się o jego ponowne wykorzystanie. W tym celu utworzymy nowy kontroler (`TaskController`) oraz odpowiadający mu widok (tasks.jsp).
+
+[source, java]
+----          	
+			@Controllerpublic class TaskController {            
+----   
+
+
+
+[source, java]
+----          	
+			@AutowiredTasksService service;@RequestMapping(value="/tasks", method=RequestMethod.GET)public String tasks(Model model) {List<Task> tasks = service.getTasks();model.addAttribute("tasks", tasks);return "tasks";}}            
+----   
+
+
+
+[source, java]
+----          	
+			<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %><html><head><title>Tasks</title></head><body><h1>The current list of tasks. </h1>            
+----   
+
+
+
+[source, java]
+----          	
+			<table><c:forEach items="${tasks}" var="t"><tr><td>${t.taskId}</td><td>${t.title}</td><td>${t.date}</td></tr></c:forEach></table>            
+----   
+
+
+
+[source, java]
+----          	
+			</body></html>            
+----   
+
+Jeżeli wywołamy stronę 
+		link:http://localhost:8080/todo-list-webapp[]
+	 to wyświetlane zostaną wszystkie dotychczas utworzone zadania. W takich właśnie sytuacjach objawia się siła frameworka, wpisana w jego naturę elastyczność i modularność. Luźne powiązania pomiędzy komponentami umożliwiają wielokrotne, ponowne wykorzystanie komponentów, w sytuacjach które początkowo w ogóle nie były przewidziane. Nigdzie w poprzednich modułach nie planowaliśmy wykorzystać komponentów biznesowych do prezentacji zadań poprzez stronę WWW. Mimo tego okazało się to być niezwykle proste i szybkie do osiągnięcia. 
+		
+=== Formularze
+
+Ponownie wykorzystany, utworzony w poprzednich modułach `TaskService`, posiada dwie metody biznesowe: do odczytu zadań (wykorzystana została powyżej) oraz do zapisu zadania. Spróbujmy teraz wykorzystać tę drugą metodę i utworzyć formularz na stronie internetowej, poprzez który dodamy kolejne zadanie do naszej listy. W tym celu wykorzystamy bibliotekę znaczników JSP dostarczaną przez Springa, która umożliwia wygodne połączenie formularza HTML z obiektem modelu (ang. binding). 
+
+[source, java]
+----          	
+			<form:form commandName="task"><table><tr><td>Task title</td><td><form:input path="title" /></td></tr><tr><td>Description</td><td><form:textarea path="description" rows="3" cols="20"/></td></tr><tr><td>Starting date</td><td><form:input path="date" /></td></tr><tr><td>Duration</td><td><form:select path="duration"><form:option value="3600000">1 hour</form:option><form:option value="7200000">2 hours</form:option><form:option value="10800000">3 hour</form:option></form:select></td></tr>	<tr>	<td colspan="2">	<input type="submit" value="Submit" />	</td>	</tr></table></form:form>            
+----   
+
+Dodając powyższy fragment do pliku tasks.jsp, tworzymy formularz, który będzie połączony z obiektem w modelu o nazwie "task" (w naszym przypadku jest to pusty obiekt typu Task). Formularz zostanie wysłany metodą POST na ten sam adres (/tasks) i wszystkie wypełnione pola formularza zostaną przypisane do odpowiednich atrybutów klasy, za pomocą nazwy wyszczególnionej w atrybucie path. Aby poprawnie wygenerować i obsłużyć formularz należy także zmodyfikować kontroler. 
+
+[source, java]
+----          	
+			@RequestMapping(value="/tasks", method=RequestMethod.GET)public String tasks(Model model) {List<Task> tasks = service.getTasks();model.addAttribute("tasks", tasks);model.addAttribute("task", new Task());return "tasks";}            
+----   
+
+
+
+
+
+[source, java]
+----          	
+			@RequestMapping(value="/tasks", method=RequestMethod.POST)public String saveTask() {logger.info("Saving task...");return "redirect:/tasks";}            
+----   
+
+Metoda tasks() kontrolera została uzupełniona o utworzenie nowego obiektu i dodanie go do modelu – w celu poprawnej generacji formularza. Dodana została także druga metoda, obsługująca metodę POST – odpowiedzialna za zapisanie formularza. Zauważmy, że ciąg znaków zwracany przez metodę nie jest nazwą widoku, ale dyrektywą nakazującą przekierowanie na stronę /tasks – natychmiast po zapisie nowego zadania. Jak już pisałem, Spring jest bardzo elastyczny, jeżeli chodzi o typy danych zwracanych przez metody kontrolera. Zamiast zwracać obiekt typu `View` nakazujący przekierowanie, można uzyskać ten sam efekt stosując przedrostek „redirect” - jak w powyższym przykładzie. Na postawie informacji w konsoli systemowej widzimy, że metoda została wywołana (pojawił się tekst „Saving task...”) - należy jednak zaimplementować samą procedurę zapisu danych. 
+
+[source, java]
+----          	
+			@RequestMapping(value="/tasks", method=RequestMethod.POST)public String saveTask(Task task) {logger.info("Saving task: [" + task + "]");service.addTask(task);return "redirect:/tasks";}            
+----   
+
+Rzeczywistość okazuje się jednak bardziej skomplikowana: zwrócony został wyjątek, że spring nie potrafi sobie poradzić z konwersją daty, która została podana w formularzu. W zasadzie mamy tutaj dwa problemy: użytkownik dostaje mało czytelną informację poprzez wyrzucony wyjątek (a lepiej by było móc samodzielnie obsłużyć ten problem) oraz framework nie potrafi samodzielnie zamieć ciągu znaków na wartość typu `Date`. Wszystkie dane z formularza domyślnie są typu `String`, jednak framework samodzielnie próbuje dokonać konwersji na typy odpowiednie w modelowym obiekcie. O ile dla typów prostych (np. `Integer`) jest to łatwe, konwersja daty wymaga dodatkowych kroków. Nim jednak przejdziemy do konwersji, poprawmy kwestie związaną z obsługą błędów. Informacje o wszelkich problemach związanych z łączeniem formularza z obiektem (a także problemy związane z walidacją – o czym za chwilę) przechowywane są w obiekcie `BindingResult`, który musimy dołączyć jako dodatkowy parametr metody kontrolera. 
+
+[source, java]
+----          	
+			@RequestMapping(value="/tasks", method=RequestMethod.POST)public String saveTask(Task task, BindingResult results) {logger.info("Saving task: [" + task + "]");if (results.hasErrors()) {return "tasks";}service.addTask(task);return "redirect:/tasks";}            
+----   
+
+Tak skonfigurowany kontroler, w przypadku jakichkolwiek błędów nie pozwoli na zapis obiektu i przekieruje użytkownika na powrót do formularza. Użytkownik staje przed szansą sprawdzenia formularza oraz poprawienia błędów (na podstawie informacji wyświetlonych na ekranie – o czym za chwilę, przy okazji walidacji). Ostatnim krokiem jest konwersja typów, z ciągu znaków na wartość typu data. W najnowszych wersjach frameworka sprawa jest niezwykle prosta: należy rozszerzyć model o informację nt. formatu danych, posługując się odpowiednią adnotacją. W tym przypadku będzie to `@DateTimeFormat`, ale z powodzeniem można używać adnotacji `@NumberFormat`, aby konwertować typy liczbowe. 
+
+[source, java]
+----          	
+			@Temporal(TemporalType.DATE)@Column(name = "startdate")@NotNull@Future@DateTimeFormat(pattern="MM-dd-yyyy")private Date date;            
+----   
+
+Zauważmy także, że wciąż używamy tego samego modelu; jeden obiekt niesie komplet meta informacji, począwszy od typu danych i elementów bazy danych, poprzez walidację, na formatowaniu skończywszy. Mimo że użycie adnotacji rozwiązuje problem niezwykle szybko, bardzo często można się spotkać z jawnymi konwerterami, z czasów sprzed Javy 1.5 – taka konwersja odbywała się wtedy w sposób diametralnie inny. Dla przykładu, poprzez samodzielnie rozszerzenie klasy `PropertyEditorSupport`, możliwa była dowolna konwersja pomiędzy tekstem a obiektem. Taki edytor należało zaimplementować samodzielnie, a następnie zarejestrować (w pliku konfiguracyjnym). W pewnym typowych przypadkach, można jednak skorzystać z narzędziowych klas frameworka i konwersję przeprowadzić w następujący sposób.
+
+[source, java]
+----          	
+				SimpleDateFormat dateFormat = 	new SimpleDateFormat("dd-MM-yyyy");	CustomDateEditor editor = new CustomDateEditor(dateFormat, false);	binder.registerCustomEditor(Date.class, editor);            
+----   
+
+Taki fragment należało umieścić w metodzie kontrolera oznaczonej adnotacją `@InitBinder` lub nadpisując initBinder() jeżeli tworzymy kontroler poprzez rozszerzenia klasy `SimpleFormController`. Finalnie, uzyskiwany jest identyczny efekt jak w przypadku użycia adnotacji. 
+		
+=== Walidacja formularzy
+
+W powyższym przykładzie zaznaczyłem, że obiekt `BindingResult` zawiera informacje o błędach, które wystąpiły podczas przetwarzania formularza, mapowania danych na obiekt itd. Pojawił się on już w poprzednich modułach, jednak jego wykorzystanie było niewielkie. W przypadku, jeżeli wykorzystujemy Spring MVC, pojawiają się pewne nowe możliwości – dodając nowy znacznik w widoku, umożliwiamy automatyczną propagację informacji o błędach do plików JSP. Każdy znacznik <form:errors /> wyszuka wiadomości odpowiednie dla atrybuty określonego w path i wyświetli je na ekranie. 
+
+[source, java]
+----          	
+			<tr><td>Task title</td><td><form:input path="title" /><span><form:errors path="title"/></span></td></tr>            
+----   
+
+Właściwości tej możemy użyć do wyświetlenia błędów związanych z mapowaniem obiektów – z poprzedniego przykładu, jak też to samej walidacji. Wywołanie walidatora okazuje się być niezwykle proste – używamy adnotacji `@Valid`. Samo oznaczenie parametru kontrolera wystarczy aby framework w całości zajął się walidacją obiektu, przypisanie informacji o błędach a na końcu – wyświetleniem ich po stronie formularza. 
+
+[source, java]
+----          	
+			@RequestMapping(value="/tasks", method=RequestMethod.POST)public String saveTask(@Valid Task task, BindingResult results) {logger.info("Saving task: [" + task + "]");if (results.hasErrors()) {return "tasks";}service.addTask(task);return "redirect:/tasks";}            
+----   
+
+Co więcej, jeżeli w projekcie mamy skonfigurowany komponent `MessageSource` (a zostało to zrobione w poprzednim module), Spring samodzielnie wybierze odpowiednie wiadomości (np. opierając się o Locale zdefiniowane w przeglądarce). 
+
+[source, java]
+----          	
+			<bean id="messageSource" 	class="org.springframework.context.support.ReloadableResourceBundleMessageSource">	<property name="basename" value="classpath:messages" />	<property name="defaultEncoding" value="UTF-8"/></bean>            
+----   
+
+
+		
+=== Alternatywa dla JSP
+
+We wszystkich powyższych przykładach jako metody generowania widoków używaliśmy JSP, sposobu bardzo często krytykowanego, jednakże równie często doskonale sprawdzającego się właśnie ze względu na swoją prostotę. JSP to domyślny sposób tworzenia szablonów HTML w Spring MVC, jednakże nic nie stoi na przeszkodzie, aby użyć bardziej zaawansowanej technologii. Poprzez odpowiednią konfiguracją komponentu `ViewResolver`, można podać dowolne inne komponenty odpowiedzialne za szablony stron WWW. Komponenty implementujące interfejs `ViewResolver` zajmują się odnajdywaniem odpowiedniego widoku na podstawie nazwy przekazanej przez kontroler – co jest generowane i w jaki sposób – jest już wewnętrzną odpowiedzialności komponentu. I tak, możliwa jest zmiana JSP na Tiles, Velocity lub też w ogóle rezygnacja z HTML i generowanie plików PDF lub Excel. Kontroler przekazuje tylko zestaw danych (model), a sama forma prezentacji w całości zależy od wybranego widoku. 
+		
+=== Spring jako komponenty biznesowe dla innych frameworków
+
+Na samym początku modułu, analizując wygenerowany przez IDE szkielet, w pliku web.xml widzieliśmy zarówno `DispatcherServlet`, jak i implementacje `ContextListener` – oba komponenty zajmowały się tworzeniem kontekstu aplikacji webowej. Na potrzeby wszystkich dotychczasowych przykładów usunięta została klasa nasłuchująca i całość aplikacji oparta została o Spring MVC. Jak jednak pisałem, w sytuacjach, gdy Spring ma być tylko zestawem komponentów biznesowych, a warstwę webową pragniemy realizować w innej technologii (np. Struts lub JSF), konieczne staje się użycie `ContextListenera`. Jeżeli przywrócimy w pliku web.xml wcześniej usunięty zapis, to wraz z wdrożeniem aplikacji na serwer, utworzony zostanie kontekst, na podstawie plików konfiguracyjnych zdefiniowanych w parametrze contextConfigLocation – w tym przypadku root-context.xml. 
+
+[source, java]
+----          	
+			<!-- The definition of the Root Spring Container --> <!-- shared by all Servlets and Filters --><context-param><param-name>contextConfigLocation</param-name><param-value>/WEB-INF/spring/root-context.xml</param-value></context-param>            
+----   
+
+
+
+[source, java]
+----          	
+			<!-- Creates the Spring Container shared by all Servlets and Filters --><listener><listener-class>org.springframework.web.context.ContextLoaderListener</listener-class></listener>            
+----   
+
+Jeżeli, analogicznie do poprzednich przykładów, zaimportujemy istniejące konfiguracje z poprzednich modułów (komponenty biznesowe aplikacji do zarządzania zadaniami), zostaną one załadowane do kontekstu. W tym momencie możemy zacząć korzystać z już istniejących komponentów, pobierając je z kontekstu przywołanego w sposób statyczny z wykorzystaniem klasy `WebApplicationContextUtils`. Aby to zademonstrować, utwórzmy przykładowy serwlet wyświetlający istniejące zadania. 
+
+[source, java]
+----          	
+			<servlet><servlet-name>taskServlet</servlet-name><servlet-class>pl.devcastzone.todo.webapp.TaskServlet</servlet-class></servlet><servlet-mapping><servlet-name>taskServlet</servlet-name><url-pattern>/tasks</url-pattern></servlet-mapping>            
+----   
+
+
+
+[source, java]
+----          	
+			public class TaskServlet extends HttpServlet {            
+----   
+
+
+
+[source, java]
+----          	
+			private static final long serialVersionUID = 1410303626350509200L;            
+----   
+
+
+
+[source, java]
+----          	
+			ApplicationContext ctx;            
+----   
+
+
+
+[source, java]
+----          	
+			@Overridepublic void init(ServletConfig config) throws ServletException {ctx = WebApplicationContextUtils.getWebApplicationContext(config.getServletContext());}            
+----   
+
+
+
+[source, java]
+----          	
+			@Overrideprotected void doGet(HttpServletRequest req, HttpServletResponse resp)throws ServletException, IOException {TasksService service = ctx.getBean(TasksService.class);List<Task> tasks = service.getTasks();resp.setContentType("text/html");PrintWriter out = resp.getWriter();out.println("<html>");out.println("<head>");out.println("</head>");out.println("<body>");out.println("<ul>");for(Task t: tasks) {out.print("<li>");out.print(t.getTitle());out.print(" ["+t.getDate()+" for ");out.print(t.getDuration()/1000/60/60);out.println("]");}out.println("</ul>");out.println("</body>");out.println("</html>");out.close();}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+Bez większych problemów wykorzystaliśmy komponenty Springa (w tym dostęp do bazy danych), w „kontrolerze” zupełnie niezwiązanym z frameworkiem – tutaj najzwyklejszy serwlet. Zaprezentowany przykład z wykorzystaniem „czystego serwletu” jest oczywiście z punktu widzenia rozwoju aplikacji zupełnym nonsensem. Nikt nie będzie korzystał z zaawansowanego frameworku, takiego jak Spring, aby warstwę webową oprzeć na archaicznych serwletach. Jednak zamiast serwletów, a analogiczny sposób można użyć dowolnego innego silnika MVC – pozostawiając logikę w postaci komponentów Spring. Niezależnie od tego czy będzie to Struts, Tapestry czy jakikolwiek inny framework – połączenie z warstwą komponentów opartą o Spring następować będzie w analogiczny do opisanego sposób. 
+		
+=== Webservice
+
+Pojęciem zbliżonym do aplikacji WWW, ale jednak trochę z boku, jest możliwość integracji z aplikacją poprzez web service. Spring, jak każdy ceniący się „framework enterprise” umożliwia upublicznienie pewnych metod właśnie w taki sposób. Spośród kilku różnych sposobów omówimy ten najpopularniejszy, czyli wykorzystujący elementy JSR-181: Web Service Metadata for Java Platform (zwanym także JAX-WS). Są to adnotacje `@Webservice` i `@Webmethod`, którymi możemy oznaczyć metody biznesowe w celu ich upublicznienia i udostępnienia poprzez serwis webowy oparty na protokole SOAP. Podobnie jak na platformie JEE (wykorzystując EJB 3.x), także w Springu zaleca się utworzenie dedykowanego komponentu, który deleguje logikę biznesową do komponentu, samemu zajmując się tylko i wyłącznie obsługą serwisu. 
+
+[source, java]
+----          	
+			@Service@WebService(serviceName="taskService")public class TaskServiceEndpoint {            
+----   
+
+
+
+[source, java]
+----          	
+			@AutowiredTasksService service;@WebMethodpublic Task[] getTasks() {List<Task> tasks = service.getTasks();return tasks.toArray(new Task[tasks.size()]);}}            
+----   
+
+Endpoint oznaczony jest adnotacją @Service, ponieważ usługa webowa musi być pełnoprawnym, zarządzanym przez Spring komponentem. Drugim krokiem, jest dodanie do kontekstu komponentu `SimpleJaxWsServiceExporter`, który przeszukuje pakiety w poszukiwaniu adnotacji zgodnych z JSR-181 i udostępnia je poprzez podany w konfiguracji adres (np. 
+		link:http://localhost:9999/[]
+	). Dodajemy to do pliku konfiguracyjnego właściwego albo dla `DispatcherServlet` lub (poprawniej) dla `ContextListenera`. W tym drugim przypadku, serwis będzie niezależny od aplikacji WWW którą wdrażamy na serwer. Uruchomiony zostanie osobny kontener `WebApplicationContext`, tylko i wyłącznie na potrzeby metod webowych. 
+
+[source, java]
+----          	
+			<beans:bean class="org.springframework.remoting.jaxws.SimpleJaxWsServiceExporter"><beans:property name="baseAddress" value="http://localhost:9999/" /></beans:bean>            
+----   
+
+Tak przygotowany serwis dostępny będzie pod adresem 
+		link:http://localhost:9999/taskService?wsdl[]
+	. 
+
+== Moduł 8: Konfiguracja kontenera
+W dotychczasowych przykładach głównie korzystaliśmy z konfiguracji automatycznej, z wykorzystaniem adnotacji. Było to wystarczające w naszych przykładowych aplikacjach, jednakże nie zawsze taka konfiguracja jest wystarczająco. Już przy okazji konfigurowania źródła danych uwydatniły się jej braki i bazę danych trzeba było konfigurować explicite. W niniejszym module usystematyzujemy wiedzę dotyczącą konfiguracji, zarówno tej opartej na plikach XML, jak i tej bazującej na JavaConfig. Konfiguracja XML przez cały okres szkolenia była przeze mnie skrzętnie pomijana (sprowadzana do niezbędnego minimum). To minimum to były komponenty wykorzystywane w aplikacji, lecz będące częścią frameworka; komponenty, które należało tylko skonfigurować i użyć. Konfiguracja XML nie była ona konieczna do wyjaśnienia zasad działania frameworka, a miejscami wprowadzałaby tylko dodatkowy szum, mogący utrudnić zrozumienie omawianych zagadnień. Teraz gdy już omówiona została większość materiału, można z powodzeniem przeanalizować, w jaki sposób konfigurować aplikację wykorzystując pliki XML oraz JavaConfig. 
+		
+=== Którą konfigurację wybrać?
+
+Automatyczna konfiguracja (zwana także autowiring) ma swoje wady i zalety. Jeżeli konfiguracja przez adnotację używana jest konsekwentnie, przez cały projekt, z wykorzystaniem tych samych konwencji, nie ma niebezpieczeństwa wprowadzenia bałaganu w projekcie. Największym bowiem problemem dla konfiguracji automatycznych (w ogólności, nieważne już czy w są to aplikację oparte o Spring, czy EJB) może być zarządzanie konfiguracją, jeżeli różni programiści, w jednej aplikacji, będą stosować różne konwencje; część aplikacji będzie konfigurowana poprzez adnotacje, a cześć poprzez pliki konfiguracyjne XML. Abstrahując od potencjalnych problemów z odnalezieniem właściwej konfiguracji, pojawiają się dodatkowe niebezpieczeństwa związane z pierwszeństwem konfiguracji: konfiguracja poprzez adnotację wykonywany jest zawsze przed konfiguracją zapisaną explicite – istnieje zatem możliwość (lub niebezpieczeństwo – zależnie od punktu widzenia) wzajemnego nadpisywania konfiguracji. Dodatkowo, pewną niedogodnością związaną z konfiguracją XML jest brak sprawdzenia poprawności typów – pliki XML to zwykłe pliki tekstowe nie ma więc możliwości statycznego sprawdzania np. typów przez kompilator Javy. Co prawda, niedogodność ta została częściowo usunięta przez wsparcie ze strony środowiska deweloperskiego (Spring IDE jako wtyczka do Eclipse’a lub SpringTool Suite), które nie dopuszcza literówek lub pilnuje, aby pełne nazwy klas komponentów miały odzwierciedlenie w rzeczywistości. Alternatywnie, począwszy od wersji 3.x frameworka, możliwe jest użycie JavaConfig, czyli także konfiguracji poprzez adnotację (ze sprawdzaniem typów) – jest to jednak podejście nie inwazyjne, niedotykające konfigurowanych komponentów. Dużo zatem zależy od preferencji samych programistów, niektórzy wolą, aby meta dane konfiguracyjne połączone były z kodem, inni preferują swobodę i elastyczność umożliwiającą zmianę konfiguracji bez konieczności ponownej kompilacji aplikacji (taka możliwość daje konfiguracja XML). 	Z drugiej strony, nikt przy zdrowych zmysłach nie pozwoli na zmiany w konfiguracji aplikacji produkcyjnej, bez ponownej fazy testów – więc często elastyczność i tak jest iluzoryczna. Spring, po raz kolejny udostępnia programiście kilka rozwiązań dla jednego problemu i umożliwia wybór optymalnego rozwiązania optymalnie dostosowanego do potrzeb. 
+		
+=== Jak podzielić pliki konfiguracyjne?
+
+Niezależnie od wybranego podejścia (XML, JavaConfig), nigdy nie warto przechowywać konfiguracji w całości, w jednym pliku. Dobrą praktyką jest podział konfiguracji na obszary. Jeżeli aplikacja to jeden, monolityczny projekt, niepodzielony na moduły, warto chociaż wprowadzić podział plików konfiguracyjnych. Mniejsza struktura jest zdecydowanie łatwiejsza w utrzymaniu i zarządzaniu, niż rozwlekły na kilkanaście tysięcy linii plik XML. Najbardziej intuicyjnym sposobem dzielenia struktury jest podział ze względu na warstwy w aplikacji: baza danych, komponenty biznesowe, frontend, API do wywołań zdalnych itd. Ułatwia to utrzymanie kodu, poprzez zmniejszenie liczby osób pracujących i modyfikujących jeden fragment rozwiązania, a także znacząco upraszcza testowanie (o czym w następnym module) poprzez możliwość selektywnego testowania fragmentów aplikacji, zaślepiając (poprzez namiastki – ang. mock) pozostałe części rozwiązania. Poprzez prosty wybór plików konfiguracyjnych, w zależności od środowiska, można zastąpić produkcyjną bazę danych, lokalną (programisty) lub bazę typu embedded, przechowywaną w pamięci (tylko na czas testów). 
+		
+=== Podstawowa konfiguracja XML
+
+Po tym abstrakcyjnym wprowadzeniu, spójrzmy, jak wyglądałaby konfiguracja przykładowych programów, gdyby korzystać tylko i wyłącznie z konfiguracji XML (lub JavaConfig). Poniższe przykłady obejmują tylko i wyłączenie tworzenie komponentów i inne kwestie nieporuszane dotychczas w szkoleniu. Konfiguracje nie obejmują konfigurowana źródła danych (lub jakichkolwiek innych komponentów dostarczanych przez framework) – zostało to omówione w innych modułach, gdzie było konieczne do zrozumienia zagadnienia. Konfiguracja komponentówZacznijmy od najprostszych przykładów – czyli konfiguracji komponentów. Dotychczas, komponenty konfigurowane były automatycznie: odpowiedni wpis w pliku XML nakazywał skanowanie pakietów w poszukiwaniu komponentów (klas oznaczonych adnotacją `@Component`), do który wstrzykiwane były zależności (poprzez atrybuty oznaczone `@Autowired` lub `@Resource`). Jeżeli usunięty zostanie wpis konfiguracyjny, to aplikacja przestaje działać i należy powiązania pomiędzy komponentami skonfigurować ręcznie. Na samym początku stajemy przed pierwszy problemem: wszystkie zależności rozwiązywane były przez kontener i nie było konieczności używania modyfikatorów pól – przez co nie było ich wcale. Abstrahując od dyskusji o zasadności tego podejścia – jest to często spotykane działanie, szczególnie w zespołach pracujących zarówno z platformą JEE (EJB 3.x) jak i Spring. Faktem jednak jest, należy dopisać metody umożliwiające poprawną inicjację obiektu (albo poprzez metody get i set lub z wykorzystaniem konstruktora). 
+
+[source, java]
+----          	
+			public class TasksService {            
+----   
+
+
+
+[source, java]
+----          	
+			@ResourceMessageSource messages;@AutowiredSqlMapClient sqlMapClient;@AutowiredValidator validator;//..}            
+----   
+
+Dla zmodyfikowanej klasy TaskService konfiguracja XML może wyglądać następująco.
+
+[source, java]
+----          	
+			<bean id="taskService" class="pl.devcastzone.spring.todo.TasksService"><property name="validator" ref="validator" /><property name="sqlMapClient" ref="sqlMapClient" /><property name="messages" ref="messageSource" /></bean>            
+----   
+
+
+
+[source, java]
+----          	
+			<bean id="taskService" class="pl.devcastzone.spring.todo.TasksService"p:validator-ref="validator" p:sqlMapClient-ref="sqlMapClient" p:messages-ref="messageSource" />            
+----   
+
+
+
+[source, java]
+----          	
+			<bean id="taskService" class="pl.devcastzone.spring.todo.TasksService"><constructor-arg ref="validator" /><constructor-arg ref="messageSource"/><constructor-arg ref="sqlMapClient" /></bean>            
+----   
+
+Pierwszy i drugi zapis są równoznaczne, notacja „p” jest po prostu skróconym zapisem odwołania się do pola (pojawiło się to w wersji 2.0 frameworka). Nie zmienia to niczego poza rozmiarem pliku konfiguracyjnego i polepszeniem jego czytelności. Ostatni zapis używa konstruktora do utworzenia obiektu. Warto zauważyć, że użycie konstruktora uniemożliwia skorzystanie z pierwszych dwóch sposobów tworzenia komponentów (chyba że wcześniej został utworzony dodatkowy, bezargumentowy konstruktor – z niego bowiem korzysta framework do tworzenia obiektów w sytuacjach, gdy zależności rozwiązywane są poprzez modyfikatory). Pliki zewnętrzneJeden z przykładowych serwisów był dodatkowo konfigurowany za pomocą danych zapisanych w pliku .properties. 
+
+[source, java]
+----          	
+			public class PrettyStringTaskPrinter implements TaskPrinter {            
+----   
+
+
+
+[source, java]
+----          	
+			@Value("${date.pattern}") String pattern;@AutowiredTasksService tasksService;            
+----   
+
+
+
+[source, java]
+----          	
+			//..}            
+----   
+
+Konfiguracja i wstrzyknięcie wartości odbywa się w sposób analogiczny jak w poprzednich przykładach, z tą różnicą, że zamiast atrybuty „ref” oznaczającego referencje do już istniejącego komponentu, użyty zostanie atrybut „value”. Sama notacja pozostaje taka sama.
+
+[source, java]
+----          	
+			<bean id="taskPrinter" class="pl.devcastzone.spring.todo.PrettyStringTaskPrinter"><property name="tasksService" ref="taskService" /><property name="pattern" value="${date.pattern}" /></bean>            
+----   
+
+Precyzowanie zależności za pomocą kwalifikatorówKwalifikatory to kolejna nowość w Spring (wprowadzona w wersji 3.0). Umożliwiała ona dodatkowe rozróżnienie komponentów implementujących ten sam interfejs (lub tych samych komponentów ale inaczej utworzonych – np. z innymi danymi). W przykładowych programach były to dwa komponenty, rozróżnione kwalifikatorem `@PrintQualifier`
+
+[source, java]
+----          	
+			@Component@PrintQualifier(printerType = Printers.TO_STRING)public class ToStringTaskPrinter implements TaskPrinter {//..}            
+----   
+
+
+
+[source, java]
+----          	
+			@Component@PrintQualifier(printerType = Printers.PRETTIFY)public class PrettyStringTaskPrinter implements TaskPrinter {//..}            
+----   
+
+Przekładając to na konfigurację XML, możemy utworzyć parę komponentów o różnych nazwach i jawnie, w konfiguracji XML przywołujemy oczekiwaną przez nas instancję – ignorując zupełnie kwalifikatory. 
+
+[source, java]
+----          	
+			<bean id="prettyTaskPrinter" class="pl.devcastzone.spring.todo.PrettyStringTaskPrinter"><property name="tasksService" ref="taskService" /><property name="pattern" value="${date.pattern}" /></bean>            
+----   
+
+
+
+[source, java]
+----          	
+			<bean id="toStringTaskPrinter" class="pl.devcastzone.spring.todo.PrettyStringTaskPrinter"><property name="tasksService" ref="taskService" /></bean>            
+----   
+
+
+
+[source, java]
+----          	
+			<!-- wykorzystanie odpowiedniego komponentu --><bean id="app" class="pl.devcastzone.spring.App"><property name="printer" ref="prettyTaskPrinter" /></bean>            
+----   
+
+To jest właśnie największa zaleta jawnej konfiguracji w XMLu – programista ma pełną kontrolę na tworzonymi komponentami, nic nie dzieje się automatycznie (automagicznie) – nie ma zatem problemu z wyborem implementacji lub wersji komponentu. Wszelkie zależności rozwiązuje programista, samodzielnie. Oczywiście – jest możliwość wymieszania konfiguracji XML z konfiguracją poprzez adnotację w taki sposób, że po stronie XML jawnie zadeklarowane zostaną kwalifikatory, natomiast wybór implementacji będzie się odbywał na poziomie docelowego komponentu, wykorzystując adnotacje. 
+
+[source, java]
+----          	
+			<bean id="prettyTaskPrinter" class="pl.devcastzone.spring.todo.PrettyStringTaskPrinter">	<qualifier type="pl.devcastzone.spring.todo.annotations.PrintQualifier">	<attribute key="printerType" value="TO_STRING"/>	</qualifier><property name="tasksService" ref="taskService" /><property name="pattern" value="${date.pattern}" /></bean>            
+----   
+
+
+
+[source, java]
+----          	
+			<bean id="toStringTaskPrinter" class="pl.devcastzone.spring.todo.PrettyStringTaskPrinter">	<qualifier type="pl.devcastzone.spring.todo.annotations.PrintQualifier">	<attribute key="printerType" value="PRETTIFY"/>	</qualifier><property name="tasksService" ref="taskService" /></bean>            
+----   
+
+Tak utworzone komponenty mogą zostać wybrane w sposób automatyczny.
+
+[source, java]
+----          	
+			<!-- instrukcja dla kontenera aby przeprowadzić --> <!-- konfigurację w sposób automatyczny --><context:annotation-config />            
+----   
+
+
+
+[source, java]
+----          	
+			<!-- brak jawnej deklaracji, który komponent ma zostać wykorzystany --><bean id="app" class="pl.devcastzone.spring.App" />            
+----   
+
+
+
+[source, java]
+----          	
+			public class App {            
+----   
+
+
+
+[source, java]
+----          	
+			@Autowired@PrintQualifier(printerType=Printers.PRETTIFY)TaskPrinter printer;//..}            
+----   
+
+Konfiguracja Spring MVC za pomocą XMLZ poprzednich modułów wiemy, że kontrolery Spring MVC także są komponentami zarządzanymi przez framework, a co za tym idzie – także mogą być konfigurowane za pomocą XML zawartego w pliku konfiguracyjnym `DispatcherServlet`. Dotychczas robione było to automatycznie, za pomocą adnotacji, ograniczając konfigurację XML to 4 deklaracji, z czego najistotniejsza to `mvc:annotation-driven`.
+
+
+
+[source, java]
+----          	
+			<mvc:annotation-driven /><context:component-scan base-package="pl.devcastzone.todo" />            
+----   
+
+
+
+[source, java]
+----          	
+			<mvc:resources mapping="/resources/**" location="/resources/" />            
+----   
+
+
+
+[source, java]
+----          	
+			<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"><property name="prefix" value="/WEB-INF/views/" /><property name="suffix" value=".jsp" /></bean>            
+----   
+
+W ten sposób, komponenty zawartych w pakiecie `pl.devcastzone.todo` były skanowane w poszukiwaniu adnotacji konfiguracyjnych. Pozostałe dwie dyrektywy konfigurują lokalizację plików JSP (widoków) oraz położenie plików resources (np. CSS, JavaScript, obrazy itd.). 
+
+Usunięcie fragmentu `mvc:annotation-driven` spowoduje natychmiastową zmianę konfiguracji, widoczną już w momencie uruchomienia serwera – w logach serwera zabraknie charakterystycznej informacji dotyczącej mapowania. Za pomocą tego jednego wpisu konfiguracyjnego, deklarowany był komponent typu `HandlerMapper`, służący do wyboru kontrolera obsługującego żądanie oraz `HandlerAdapter` mający na celu dopasowanie metody kontrolera do wartości żądania (metoda http, parametry). W przypadku adnotacji był to `DefaultAnnotationHandlerMapping `oraz `AnnotationMethodHandlerAdapter`. Jeżeli jednak nie decydujemy się na konfigurację automatyczną, możemy analogiczną pracę wykonać ręcznie. Wiąże się to z pewnymi niedogodnościami, ponieważ zmusza to nasze kontrolery do implementowania specyficznych dla Springa interfejsów – np. `AbstractController`. 
+
+
+
+[source, java]
+----          	
+			public class GetTasksController extends AbstractController {TasksService service;public void setService(TasksService service) {this.service = service;}protected ModelAndView handleRequestInternal(HttpServletRequest request,HttpServletResponse response) throws Exception {ModelAndView modelAndView = new ModelAndView("tasks");List<Task> tasks = service.getTasks();modelAndView.getModel().put("tasks", tasks);modelAndView.getModel().put("task", new Task());return modelAndView;}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+Jak widać na powyższym przykładzie, kontroler nie posiada jakichkolwiek adnotacji – całość konfiguracji odbywa się w pliku XML.
+
+
+
+[source, java]
+----          	
+			<bean class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter" />            
+----   
+
+
+
+[source, java]
+----          	
+			<bean class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping" />            
+----   
+
+
+
+[source, java]
+----          	
+			<bean name="/tasks"	class="pl.devcastzone.todo.GetTasksController">	<property name="service" ref="taskService"/></bean>            
+----   
+
+W ten sposób, można łączyć istniejące aplikacje (nie zawierające adnotacji) z nowymi komponentami napisanymi w Spring 3.x, opartych w całości o automatyczną konfigurację. 
+
+
+		
+=== Konfiguracja JavaConfig
+
+Wykorzystując klasy konfiguracyjne JavaConfig, można uzyskać zbliżone rezultaty jak w przypadku powyższej konfiguracji XML. Kompletna konfiguracja wymaga jednak zarówno konfiguracji JavaConfig jak i fragmentu konfiguracji XML
+
+[source, java]
+----          	
+			@Configuration@ImportResource("classpath:META-INF/spring/app-properties.xml")public class AppConfiguration {@Value("${date.pattern}") String pattern; 	@Bean public TasksService tasksService() throws Exception {return new TasksService(messages(), sqlMapClient(), validator());}@Beanpublic TaskPrinter taskPrinter() throws Exception {PrettyStringTaskPrinter p = new PrettyStringTaskPrinter();p.setTasksService(tasksService());p.setPattern(pattern);return p;}@Beanpublic App app() throws Exception {App a = new App();a.setPrinter(taskPrinter());return a;}@Beanpublic DataSource dataSource() {BasicDataSource ds = new BasicDataSource();ds.setDriverClassName("org.hsqldb.jdbcDriver");ds.setUrl("jdbc:hsqldb:file:target/localdb/testdb");ds.setUsername("sa");ds.setPassword("");return ds;}@Bean public SqlMapClient sqlMapClient() throws Exception {SqlMapClientFactoryBean factory = new SqlMapClientFactoryBean();factory.setDataSource(dataSource());factory.setConfigLocation(new ClassPathResource("META-INF/sqlmap/sqlmap-config.xml"));factory.afterPropertiesSet();SqlMapClient sqlMapClient = factory.getObject();return sqlMapClient;}@Beanpublic Validator validator() {return new LocalValidatorFactoryBean();}@Beanpublic MessageSource messages() {ReloadableResourceBundleMessageSource ms = new ReloadableResourceBundleMessageSource();ms.setBasename("message");ms.setDefaultEncoding("UTF-8");return ms;}}            
+----   
+
+
+
+[source, java]
+----          	
+			<?xml version="1.0" encoding="UTF-8"?><beans xmlns="http://www.springframework.org/schema/beans"xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"xmlns:context="http://www.springframework.org/schema/context"xsi:schemaLocation="http://www.springframework.org/schema/beanshttp://www.springframework.org/schema/beans/spring-beans-3.0.xsdhttp://www.springframework.org/schema/contexthttp://www.springframework.org/schema/context/spring-context-3.0.xsd">            
+----   
+
+
+
+[source, java]
+----          	
+			<context:property-placeholder location="classpath:date-format.properties" />            
+----   
+
+
+
+[source, java]
+----          	
+			</beans>            
+----   
+
+Należy przy tym zaznaczyć, iż konfiguracja poprzez adnotację `@Configuration` nie ma na celu całkowitego zastąpienia konfiguracji XML. Jak widać na powyższym przykładzie, nie ma możliwości sięgnięcia do zewnętrznego pliku z danymi (pliku properties) – i musi się to odbywać poprzez zewnętrzny plik konfiguracyjny XML. Przy okazji jest to kolejny przykład, że pliki konfiguracyjne należy dzielić na mniejsze, możliwe do współdzielenia części. Jeżeli zatem wydzielimy część odpowiedzialną za meta konfigurację (plik properties) oraz część bazodanową do dwóch oddzielnych plików – elementy konfiguracji co do której zakładamy brak zmian – konfiguracja JavaConfig znacznie się uprości. 
+
+[source, java]
+----          	
+			@Configuration@ImportResource({"classpath:META-INF/spring/app-properties.xml","classpath:META-INF/spring/app-context-db.xml"})public class AppConfiguration {@AutowiredMessageSource messages;@AutowiredSqlMapClient sqlMapClient;@AutowiredValidator validator;@Value("${date.pattern}") String pattern; 	@Bean public TasksService tasksService() {return new TasksService(messages, sqlMapClient, validator);}@Beanpublic TaskPrinter taskPrinter() {PrettyStringTaskPrinter p = new PrettyStringTaskPrinter();p.setTasksService(tasksService());p.setPattern(pattern);return p;}@Beanpublic App app() {App a = new App();a.setPrinter(taskPrinter());return a;}}            
+----   
+
+Wciąż jednak pozostaje aktualne pytanie – kiedy używać, którego podejścia i czy warto łączyć je ze sobą. Moim zdaniem warto, szczególnie w sytuacjach, gdy tworzone są testy wymagające inicjacji kontenera; z pomocą JavaConfig można w najprostszy i najszybszy możliwy sposób utworzyć konfigurację frameworka i następnie wykorzystać ją w testach. Jest to o tyle nęcące, że całość testu przechowywana jest jednym pliku, jest zamkniętą całością – znacznie ułatwiając późniejsze utrzymanie takiego kodu. Temat ten zostanie jeszcze znacząco rozwinięty w kolejnym module. 
+		
+=== Konfiguracja bez konfiguracji
+
+Ostatnią metodą konfigurowania kontekstu, metodą zdecydowanie najmniej formalną, jest pominięcie plików konfiguracyjnych i konfiguracja kontekstu poprzez podanie klas bezpośrednio do `ApplicationContext`. Sprawdza się to w małych aplikacjach (lub podobnie jak JavaConfig) w testach, gdzie zależności sprowadzają się do minimum i wykorzystanie pliku XML do konfiguracji staje się zbędną nadmiarowością. Za pomocą klasy `AnnotationConfigApplicationContext` można zbudować kontekst podając tylko klasy komponentów odpowiednio opatrzone adnotacjami.
+
+[source, java]
+----          	
+			AbstractApplicationContext parent =new ClassPathXmlApplicationContext(new String[] { 	"META-INF/spring/app-properties.xml",  	"META-INF/spring/app-context-db.xml"});AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();context.setParent(parent);context.register(PrettyStringTaskPrinter.class);context.register(TasksService.class);context.refresh();            
+----   
+
+Sama klasa `AnnotationConfigApplicationContext` posiada kilka przeciążonych konstruktorów; ja wybrałem ten niepociągający za sobą automatycznego odświeżenia kontekstu. Możliwe jest podanie listy klas bezpośrednio w konstruktorze. Wtedy kontekst zostanie samodzielnie odświeżony (bez konieczności wywoływania metody refresh()). Niestety nie będzie wtedy możliwe podanie kontekstu nadrzędnego (w tym konkretnym przypadku – utworzonego na bazi plików konfiguracyjnych). 
+		
+=== Podsumowując
+
+Opisałem kilka różnych sposobów budowania aplikacji aby (po raz kolejny) pokazać bardzo dużą elastyczność frameworka. W zależności od doświadczenia, potrzeb, inwencji programisty, funkcjonalnych bądź niefunkcjonalnych wymagań, możliwe jest swobodne budowanie aplikacji; zarówno w całości jak i wydzielając z systemu pomniejsze fragmenty. Dobrze przygotowana konfiguracja powoduje że aplikacja przestaje być monolitem; zyskuje niesamowitą elastyczność umożliwiającą tworzenie wydajnych testów integracyjnych lub próby wdrożenia fragmentów aplikacji na środowiska, aby zweryfikować połączenia z bazą danych, której z wielorakich względów (np. licencyjnych) nie jesteśmy w stanie zainstalować lokalnie.
+
+== Moduł 9: Testowanie
+Rozdział ten z premedytacją nie został nazwany testowanie jednostkowe, tym bardziej testy integracyjne, systemowe – czy jakkolwiek by ich nie nazywać. Celem tego rozdziału nie jest prowadzenie świętej wojny o testowaniu aplikacji, ale dokładne opisanie jak wykorzystywany framework jest w stanie pomóc w codziennych testach programistycznych. 
+
+Nie ulega kwestii, że testy stanową integralną część procesu wytwarzania oprogramowania. Z takiego założenia wyszli także twórcy Springa, wbudowując we framework szereg programistycznych ułatwień, aby testy aplikacji rozpocząć na możliwie najwcześniejszym etapie. Nie chodzi zatem tylko i wyłączenie o testy w rozumienia zespołu QA, który pod koniec procesu weryfikuje zgodność aplikacji z wymaganiami, ale o znaczące pokrycie kodu aplikacji testami automatycznymi, przygotowywanymi przez programistów i uruchamianych w sposób ciągły, przez cały czas pracy nad systemem. Stąd też mowa zarówno o testach jednostkowych, jak i integracyjnych – Spring oferuje szereg narzędzi wspierających oba etapy. 
+
+Dodatkową i niezaprzeczalną zaletą testowania już na wczesnym etapie prac nad aplikacją jest możliwość weryfikacji poprawności pewnych założeń, bez konieczności całościowej integracji systemu. Efektywnie wykorzystując testy, bardzo szybko otrzymujemy zwrotną informację o postępie prac i poprawności działania poszczególnych komponentów. Dzieląc system na małe, luźno powiązane ze sobą komponenty (ang. loose coupling), otrzymujemy możliwość selektywnego testowania poszczególnych bloków, nawet w sytuacjach, gdy pozostałe części aplikacji nie są jeszcze gotowe, nie kompilują się bądź w ogóle ich nie ma. Taka modularna architektura jest najważniejszym paradygmatem frameworka, stąd też bardzo duże wsparcie dla testów nie jest zaskakujące. 
+
+
+		
+=== Testy jednostkowe
+
+Jak już zaznaczyłem na początku, niniejszy moduł obejmuje dwa obszary: testy jednostkowe oraz integracyjne – sama dyskusja o testowaniu złożonych aplikacji wykracza zdecydowanie poza zakres tego szkolenia. Test jednostkowy (co sama nazwa wskazuje) obejmuje swoim zakresem jedną element – jednostkę. Z reguły jest to jeden komponent (czyli jedna klasa Java), której działania weryfikujemy poprzez podanie odpowiednich danych wejściowych. Test jest także klasą języka Java, którą jednak przygotowujemy nieco inaczej niż zwykła klasę. W zależności od tego, które narzędzie do testowania preferujemy: JUnit czy TestNG, występują drobne różnice w konstrukcji klasy testowej. Nie będziemy jednak teraz się na tym skupiać – wszystkie testy wykorzystywać będą narzędzie JUnit. 
+
+W najprostszej postaci, testowany komponent nie jest w żaden sposób zależny od innych elementów systemu. W takie sytuacji test jest trywialny i nie warto się nim zajmować. W bardziej złożonych przepadkach, klasa posiada pewne zależności, konieczne do poprawnego działania aplikacji. 
+
+
+
+[source, java]
+----          	
+			public class PrettyStringTaskPrinter implements TaskPrinter {            
+----   
+
+
+
+[source, java]
+----          	
+			@Value("${date.pattern}") String pattern;@AutowiredTasksService tasksService;            
+----   
+
+
+
+[source, java]
+----          	
+			public void printCurrentTasks() throws Exception {SimpleDateFormat format = new SimpleDateFormat(pattern);List<Task> tasks = tasksService.getTasks();for (Task t : tasks) {StringBuilder b = new StringBuilder();b.append(" * ").append(t.getTitle()).append(" (")            
+----   
+
+	.append(t.getDescription()).append(")\n")
+
+[source, java]
+----          	
+			.append("\t").append("[").append(format.format(t.getDate())).append(" for ").append(t.getDuration()/1000/60/60).append(" hour(s)").append("]");System.out.println(b.toString());}}}            
+----   
+
+Zacznijmy od prostego przykładu klasy `PrettyStringTaskPrinter`. Klasa wyświetla na ekran zadania, poprawnie sformatowane, używające odpowiedniego formatu daty. Jeżeli spróbujemy zastanowić się nad testem tej klasy, sprawdzającym czy formatowanie jest poprawne, zauważymy że taki ten niespecjalnie jest możliwy, że mamy do czynienia ze ścisłymi powiązaniami. Widzimy, że klasa zależy od dwóch komponentów: `TasksService` (pobierającego dane z bazy) oraz `System.out` (poprzez który wypisywane są informacje na ekran). Wczesne testowanie ma właśnie za zadanie wyeliminować takie sytuacje, a należy je wyeliminować, ponieważ mimo iż w momencie tworzenia klasa realizowała postawione przed nią zadanie, jej projekt utrudnia jakiekolwiek modyfikacje. 
+
+Poprawnie zbudowana klasa nie musi zależeć od komponentu pobierającego zadania z bazy danych; wystarczy przekazać listę takich zadań jako parametr. Dodatkowe, zamiast zapisywać bezpośrednio do konsoli systemowej, klasa mogłaby albo zwracać dane w postaci ciągu znaków, albo przyjmować dodatkowy parametr typu `PrintStream`, do którego zapisywane byłby dane. Wtedy można by stworzyć test, który byłby prawdziwie jednostkowy. 
+
+
+		
+=== Namiastki (ang. mocks)
+
+Niestety, rzadko kiedy poruszamy się w świecie tak idealnym i z sytuacjami opisanymi powyżej należy sobie radzić za pomocą namiastek obiektów zależnych (czyli nazywając z angielska: mocków). Mock Object jest to obiekt, który udaje oryginalny obiekt, zachowując z nim kompatybilność na poziomie interfejsu (oferuje dostęp do takich samych metod publicznych), jednocześnie umożliwiając utworzenie dowolnej odpowiedzi. Co za tym idzie, z pomocą namiastek, programista piszący testy dostaje narzędzie umożliwiające dowolne wpłynięcie na dane przekazane do testowanej metody i poprzez to możliwość dokładnego sprawdzenia wszystkich możliwych stanów w obrębie metody. Spring jako taki nie skupia się jednak na narzędziach do testowania, polecając w wyżej wymienionych sytuacjach wykorzystanie specjalistycznych narzędzi takich jak Mockito lub EasyMock. Spring oferuje jednak kilka wyspecjalizowanych klas narzędziowych szczególnie dobrze sprawdzających się w testach na granicy samego frameworka i serwera aplikacji, umożliwiając testowanie klas wykorzystujących serwlety bądź odwołania do drzewa JNDI. 
+
+[source, java]
+----          	
+			public class PrettyStringTaskPrinterTest {            
+----   
+
+
+
+[source, java]
+----          	
+			PrettyStringTaskPrinter printer;PrintStream sysout;@Beforepublic void setup() {printer = new PrettyStringTaskPrinter();printer.setPattern("dd-MM-yyyy");TasksService service = mock(TasksService.class);printer.setTasksService(service);sysout = mock(PrintStream.class);System.setOut(sysout);}@Testpublic void printerTest() throws Exception {Task t = new Task.Builder().withTitle("test task").withDescription("Description").withDate(new Date()).withDuration(1000*60*60).build();when(printer.getTasksService().getTasks()).thenReturn(Arrays.asList(t));printer.printCurrentTasks();verify(sysout)            
+----   
+
+	.println(" * test task (Description)\n\t[11-03-2012 for 1 hour(s)]");
+
+[source, java]
+----          	
+			}}            
+----   
+
+Przykładowy test wykorzystujący Mockito mógłby wyglądać jak powyżej. Jak widać, ze względu na wadliwą konstrukcję klasy jest on nietrywialny – stąd też bardzo duży nacisk kładziony jest na poprawną budowę klas oraz ich testowanie. Zapewnia to bardzo szybkie sprzężenie zwrotne pozwalające uniknąć problemów takich jak powyższe. 
+		
+=== Testy integracyjne
+
+Wróćmy jednak do Springa i do wsparcia testów oferowanego przez framework. Jak już pisałem, Spring oferuje szereg namiastek związanych z tworzeniem testów na pograniczu kontekstu zarządzanego przez framework oraz zewnętrznym otoczeniem (np. serwerem aplikacji). Dla przykładu, możemy w całości testować kontrolery, bez konieczności uruchamiania kontenera serwletów. 
+
+[source, java]
+----          	
+			@RunWith(SpringJUnit4ClassRunner.class)@ContextConfiguration("file:src/main/webapp/WEB-INF/spring/appServlet/servlet-context.xml")public class TaskServletTest {            
+----   
+
+
+
+[source, java]
+----          	
+			@AutowiredApplicationContext ctx;            
+----   
+
+
+
+[source, java]
+----          	
+			@AutowiredTaskController controller;@Testpublic void servletTest() throws Exception {MockHttpServletRequest req = new MockHttpServletRequest("GET", "/tasks");MockHttpServletResponse resp = new MockHttpServletResponse();HandlerAdapter handlerAdapter = ctx.getBean(AnnotationMethodHandlerAdapter.class);final ModelAndView model = handlerAdapter.handle(req, resp,controller);assertViewName(model, "tasks");assertAndReturnModelAttributeOfType(model, "task", Task.class);assertAndReturnModelAttributeOfType(model, "tasks", List.class);}            
+----   
+
+
+
+[source, java]
+----          	
+			}            
+----   
+
+W powyższym teście sprawdzamy czy wywołując adres /tasks napisany przez nas kontroler zachowa się poprawnie, tj. przekierowuje użytkownika do widoku o nazwie „tasks” oraz doda do modelu dwa atrybuty o wymienionych powyżej typach. Wykorzystujemy w tym celu obiekty `MockHttpServletRequest` oraz `MockHttpServletResponse`, które to dostarczane są przez framework. Natomiast dodatkowe asercje (assertViewName) pozwalają operować bezpośrednio na obiekcie `ModelAndView` – przez co test staje się niezwykle prosty oraz czytelny (w porównaniu do zaprezentowanego wcześniej testu opartego o generyczne narzędzie). Najważniejsze jednak w tym teście jest to, że poprzez wykorzystanie adnotacji `@RunWith(SpringJUnit4ClassRunner.class)` – test staje się pełnoprawnym komponentem, umożliwiającym m.in. wstrzykiwanie zależności (co zresztą zostało uczynione z kontrolerem). Poprzez podanie w parametrach adnotacji `@ContextConfiguration` lokalizacji pliku konfiguracyjnego, zainicjowany został kontekst wraz ze wszystkimi zależnościami (w tym połączeniem do bazy danych). Nic więc nie stoi na przeszkodzie, aby testować nie tylko pojedyncze komponenty, ale także całe grupy komponentów. Na tym polegają właśnie testy integracyjne. 
+		
+=== Modularyzacja aplikacji
+
+Pewną niedogodnością poprzedniego testu jest uruchomianie pełnego kontekstu – wraz z pełnym dostępem do bazy danych. Nie jest to jednak konieczność, a wynika raczej z konstrukcji plików konfiguracyjnych. Wracamy tutaj do modularyzacji i sposobów dzielenia plików konfiguracyjnych, o czym pisałem w poprzednim module. Jeżeli skorzystamy z tej techniki, to bez większych problemów, zamiast „produkcyjnej” bazy danych, skorzystamy w osobnego pliku konfiguracyjnego dla testów, który korzystać będzie np. z bazy danych przechowywanej w pamięci. W tym celu utworzymy dodatkowy plik konfiguracyjny test-context-db.xml (będący kopią oryginalnego app-context-db.xml), który będzie zawierał odpowiednią konfigurację bazy danych. 
+
+[source, java]
+----          	
+				<jdbc:embedded-database id="dataSource">	<jdbc:script location="classpath:schema.sql"/>	</jdbc:embedded-database>            
+----   
+
+Tak podzielone pliki konfiguracyjne możemy użyć w naszym teście, modyfikując atrybuty adnotacji `@ContextConfiguration`.
+
+[source, java]
+----          	
+			@RunWith(SpringJUnit4ClassRunner.class)@ContextConfiguration({"classpath:META-INF/spring/app-properties.xml","classpath:test-context-db.xml","classpath:META-INF/spring/app-context.xml","file:src/main/webapp/WEB-INF/spring/appServlet/servlet-context.xml"})public class TaskServletTest {//..}            
+----   
+
+Dla zmienionej konfiguracji test niestety nie działa. Wynika to z faktu zmiany bazy danych. Z jednej strony bardzo dobrze, że przestajemy w testach korzystać z „produkcyjnej” bazy danych i zaczynamy korzystać z instancji dedykowanej testom. Możemy teraz dowolnie manipulować danymi, bez ryzyka, że uszkodzone zostaną zewnętrzne dane. Minusem natomiast jest to, że na obecną chwilę baza nie istnieje i nie ma w niej żadnych danych – wszystko musimy przygotować samodzielnie. Wbrew pozorom, mimo wydawać by się mogło większego nakładu pracy, jest to pozytywny aspekt testów. Klasa testowa staje się całością, jest niezależna od otoczenia, od danych w innych systemach – przez co testy stają się pewniejsze. Nie ma prawa zaistnieć sytuacja, w której testy przestają działać na skutek zmian w środowisku dokonanych przez osoby trzecie. Jeśli dodatkowo przygotowanie danych testowych sprowadza się do kilku dodatkowych linijek SQL – nie stanowi to chyba zbytniego wyzwania. Dla kontekstu skonfigurowanego tak jak omówiono powyżej, metoda testująca nie tylko typy zwracane przez kontroler, ale także wartości, przedstawiona jest poniżej. 
+
+[source, java]
+----          	
+			@Testpublic void servletTest() throws Exception {MockHttpServletRequest req = new MockHttpServletRequest("GET", "/tasks");MockHttpServletResponse resp = new MockHttpServletResponse();HandlerAdapter handlerAdapter = ctx.getBean(AnnotationMethodHandlerAdapter.class);final ModelAndView model = handlerAdapter.handle(req, resp,controller);assertViewName(model, "tasks");assertAndReturnModelAttributeOfType(model, "task", Task.class);assertAndReturnModelAttributeOfType(model, "tasks", List.class);LocalDate date = LocalDate.now();final Task testTask = new Task.Builder().withId(1l).withTitle("test task").withDescription("Description").withDate(date.toDate()).withDuration(1000*60*60).build();assertModelAttributeValue(model, "tasks", Arrays.asList(testTask));assertModelAttributeValue(model, "task", new Task());}            
+----   
+
+
+		
+=== Podsumowanie
+
+Na powyższych przykładach widać, że dobry framework to nie tylko narzędzie w którym implementujemy wymagania funkcjonalne. Jest to także zestaw pomocniczych klas, które wspomagają cały proces wytwórczy – aż po omówione tutaj testy skończywszy. Testy to właśnie jest jedną z cech, która bardzo mocno odróżniała Springa od świata opartego na komponentach EJB. Twórcy Springa wyszli z założenia, że testy pisane przez programistów są koniecznością i zaoferowali im bardzo dobrą platformę umożliwiającą wydajne ich pisanie i zarządzanie nimi. W świecie EJB takie narzędzia zaczęły pojawiać się dopiero niedawno, natomiast w Spring są od zawsze. Co więcej, autorzy frameworka od samego początku wyszli z założenia, że środowisko testowe i produkcyjne to dwa różne systemy, a co za tym idzie wymagają one odmiennej konfiguracji. Takie trudno rozwiązywalne w świecie EJB niuanse w Springu są na wyciągnięcie ręki. 
+
