@@ -1,0 +1,16 @@
+
+Drogi czytelniku, z przyjemnością oddaje w Twoje ręce niniejszy skrypt / książkę / podręcznik jak tworzyć aplikacje (nie tylko www) wykorzystując Spring Framework.
+
+Zaczyn tej książki powstał jako skrypt do szkolenia w ramach platformy link:http://devcastzone.pl[], a następnie, poprzez kilkaset godzin szkoleniowych, ewoluował w kierunku kompleksowego ebooka - aż do tego miejsca.
+
+Oczywiście przeczytać o Springu to nie znaczy nauczyć się frameworka. Zachęcam więc do zapoznania się z częścią praktyczną na link:http://devcastzone.pl[] lub bezpośrednio na szkoleniach organizowanych przez link:http://bnsit.pl[] - które także regularnie prowadzę.
+
+Szkolenia prowadzone w ramach tego programu nie ograniczają się tylko do podstaw framework'a. Są one indywidualizowane i dostosowane do potrzeb grupy, po to aby możliwie najlepiej odpowiedzieć na problemy i wyzwania przed którymi stoją zespoły.
+
+////
+TODO: tutaj przydałoby się trochę testimonials
+////
+
+Zatem, Drogi Czytelniku, zapraszam do czytania - mam nadzieję że książka nie zawiedzie, że wiedza w niej zawarta będzie przydatna, a lektura sprawi Tobie przynajmniej tyle samo radości co mi pisanie.
+
+Jakub
