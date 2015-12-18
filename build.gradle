@@ -1,12 +1,10 @@
 plugins {
 	id 'org.asciidoctor.convert' version '1.5.2'
 	id 'com.github.jruby-gradle.base' version '0.1.5'
-	id 'org.kordamp.gradle.livereload' version '0.2.1'
 }
 
 apply plugin: 'java'
 apply plugin: 'org.asciidoctor.convert'
-apply plugin: 'org.kordamp.gradle.livereload'
 
 version = '1.0.0-SNAPSHOT'
 
@@ -24,9 +22,6 @@ asciidoctor {
 				'setanchors':'true',
 				'idprefix':'',
 				'idseparator':'-',
-				'docinfo1':'true'
-}
-
-liveReload {
-  docRoot asciidoctor.outputDir.canonicalPath
+				'docinfo1':'true',
+				'source-location': '/home/kubam/workspaces/szkolenia/exercises/training-spring/exercises'
 }
