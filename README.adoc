@@ -1,0 +1,20 @@
+= Spring Book
+
+== O książce
+
+Co by nie strzępić języka - zachęcam do przeczytania link:src/docs/asciidoc/sections/modul00-intro.adoc[wstępu do książki] ;-)
+
+== Skąd pobrać? Gdzie kupić?
+
+Książka jest otwarta, ogólnie dostępna. Można ją czytać bezpośrednio tutaj (ale to mało wygodne). Są lepsze sposoby:
+
+=== Leanpub
+
+Jest także opcja dla leniwych. Książka jest dostępna w serwisie link:http://leanpub.com[]. Można ją pobrać bezpłatnie (lub wesprzeć mnie finasowo dowolną kwotą - wedle uznania).
+
+=== Pobrać książkę i 'zbudować'
+
+Książka wykorzystuje link:http://asciidoctor.org/docs/what-is-asciidoc/[AsciiDoc] oraz link:http://asciidoctor.org/[AsciiDoctor] - więc przy odrobinie chęcie można z poniższego manuskryptu stworzyć sobie własną książkę (PDF, ePub, mobi).
+
+//TODO: opisać jak stworzyć książkę
+
