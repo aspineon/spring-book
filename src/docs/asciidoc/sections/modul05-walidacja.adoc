@@ -1,0 +1,208 @@
+= Część 5: Walidacja
+
+Nasza przykładowa aplikacja składa się obecnie z trzech warstw: bardzo ubogiego "widoku", warstwy "usług biznesowych" (pobierających i zapisujących dane) oraz warstwy dostępu do bazy danych.
+Każda z warstw realizuje konkretne zadania i nie wykracza poza nie (prezentując przy tym bardzo dobrą separację: warstwa usług jest w pełni niezależna od przyjętej strategii dostępu do bazy danych).
+
+Wraz z rozwojem aplikacji pojawiają się jednaj nowe wymagania, które w sposób wertykalny przecinają całą aplikację i muszę być zrealizowane na każdym etapie przetwarzania danych w aplikacji. Taką funkcjonalnością może być walidacja, którą zajmiemy się właśnie teraz.
+Walidacja, czyli sprawdzenie poprawności danych.
+Każda warstwa samodzielnie powinna zweryfikować czy dane które otrzymuje są zgodne z jej oczekiwaniami (z kontraktem) oraz w przypadku problemów (niezgodności), powinna zasygnalizować odpowiedni błąd.
+Jest to pewne rozszerzenie podejścia _programowania defensywnego_, które nakazuje sprawdzenie poprawności danych przed przystąpieniem do operacji na nich.
+Spring Framework oferuje w tym miejscu bardzo bogaty zestaw narzędzi wspierających właśnie taką zaawansowaną weryfikację danych.
+
+== Bean Validation
+
+Nie powinno być zaskoczeniem, że możemy mieć do czynienia z przynajmniej kilkoma sposobami walidacji obiektów, które oferuje frameworku.
+Jako że autorzy Springa bardzo duży nacisk kładą na kompatybilność wstecz, można skorzystać ze wszystkich historycznie dostępnych metod walidacji obiektów.
+Skupimy się jednak na najnowszej i najłatwiejszej metodzie, czyli implementacji standardu Java Bean Validation, opisanego w JSR-303.
+Spring wspiera ten standard, chociaż nie jest go referencyjną implementacją. Do poprawnego działania wymaga obecności np. referencyjnej implementacja standardu, czyli biblioteki hibernate-validator.
+JSR-303 standaryzuje sposób deklarowania reguł walidacyjnych na platformie Java.
+Odbywa się to poprzez adnotację, którymi oznaczamy na przykład pola modelu i na tym poziomie definiujemy reguły, które element modelu musi spełnić.
+W praktyce wygląda to niezwykle prosto i przykładowa, używana w aplikacji klasa modelu, przybierze następującą postać.
+
+[source, java]
+----
+@Entity
+@Table (name = "tasks")
+public class Task {
+
+	@Id
+	@GeneratedValue
+	@Column(name = "task_id")
+	@NotNull //<1>
+	private long taskId;
+
+	@Temporal(TemporalType.DATE)
+	@Column(name = "startdate")
+	@NotNull //<2>
+	@future //<3>
+	private Date date;
+
+	@Basic
+	@NotNull //<4>
+	@Min(value = 5*60*1000) //<5>
+	private int duration;
+
+	@NotNull //<6>
+	@Size(min = 1, max = 50) //<7>
+	private String title;
+
+	@NotNull //<8>
+	@Size(min = 1) //<9>
+	private String description;
+
+	//..
+}
+----
+<1> Wszystkie oznaczone pola to adnotacje walidacyjne z pakietu `javax.validation`
+
+Jak widać na przykładzie, nie ma przeszkód aby łączyć w jednej klasie modelu adnotację dotyczące bazy danych, jak i walidacji (a czasem nawet mapowanie obiektów na dokumenty XML).
+Takie podejście ma zarówno wady jak i zalety. Z jednej strony zaletą takiego podejścia jest ponowne wykorzystanie już istniejącego kodu oraz przechowywanie wszystkich meta danych obiektów wraz z samym obiektem.
+Do pewnego stopnia poprawia to znacznie czytelność kodu.
+Niestety ma też minusy - z czasem klasy potrafią urosnąć do monstrualnych rozmiarów, ich czytelność maleje, a narastają problemy z utrzymaniem takich klas.
+Wciąż jednak deklaratywna walidacja poprzez adnotację jest daleko czytelniejsza niż seria zagnieżdżonych wartości `if` i `else` w kodzie biznesowym.
+Tak zmodyfikowana klasa może być użyta do walidacji.
+W pierwszy kroku należy w pliku konfiguracyjnym wskazać, którego walidatora (udostępnianego przez framework) pragniemy użyć, a następnie wstrzyknąć go do odpowiedniego serwisu.
+
+[source, xml]
+----
+<bean id="validator"
+	class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"/>
+----
+
+Spring daje nam wybór, czy korzystamy ze standardowego Bean Validation API i wstrzykujemy instancję `javax.validation.Validator` czy korzystamy z klasy dostarczonych przez framework (`org.springframework.validation.Validator`).
+Użycie podstawowego API (wynikającego ze standardu Java) wyglądać będzie następująco.
+
+[source, java]
+----
+public void addTask(Date startDate,
+	int duration,
+	String title,
+	String description) throws Exception {
+
+		Task t = new Task.Builder()
+			.withTitle(title)
+			.withDescription(description)
+			.withDate(startDate)
+			.withDuration(duration).build();
+
+		Set<ConstraintViolation<Task>> errors = validator.validate(t);
+
+		if (errors.size() > 0) {
+			System.out.println("Validation errors");
+			for (ConstraintViolation<Task> e : errors)
+				System.out.println(" * " + e.getMessage());
+
+			return;
+		}
+
+		sessionFactory.getCurrentSession().save(t);
+}
+----
+
+Przed zapisaniem do bazy obiekt `Task` został sprawdzony pod kątem poprawności i ewentualne błędy zostały wyświetlone w konsoli.
+Istotne jest, że użycie standardowego API wymaga dołączenia do projektu walidatora zgodnego z API (np. modułu `hibernate-validator`). W przeciwnym wypadku walidacja nie zadziała.
+Ta sama operacja z użyciem komponentów Springa wyglądać będzie odrobinę inaczej.
+Inny jest interfejs klasy walidatora, a także wymagane jest przygotowanie _a priori_ struktury danych dla ewentualnych błędów. W tym celu użyłem klasy `BindException`, która jest domyślną implementacją interfejsu `Error` (o którym więcej za chwilę).
+Klasa ta standardowo inicjowana jest przez framework i w przypadku bardzo prostych zastosowań - jak w poniższym przykładzie - wydaje się to być nieco na wyrost.
+Niemniej jednak, np. w większej aplikacji webowej taka konstrukcja okazuje się być o wiele bardziej elastyczna niż standardowe `ConstraintViolation`.
+
+[source, java]
+----
+public void addTask(Date startDate,
+	int duration,
+	String title,
+	String description) throws Exception {
+
+		Task t = new Task.Builder()
+			.withTitle(title)
+			.withDescription(description)
+			.withDate(startDate)
+			.withDuration(duration).build();
+
+		BindException errors = new BindException(t, "task");
+		validator.validate(t, errors);
+
+		if (errors.hasErrors()) {
+			System.out.println("Validation errors:");
+			for (Object e : errors.getAllErrors()) {
+				System.out.println(" * " + e);
+			}
+
+			return;
+		}
+
+		sessionFactory.getCurrentSession().save(t);
+}
+----
+
+W powyższym przykładzie, w momencie wystąpienia błędów, działanie metody zostało przerwane.
+Nie jest to jednak konieczne.
+Wraz z dodaniem do projektu bibliotek odpowiedzialnych za walidację, Spring samodzielnie zaczyna dbać o poprawność i spójność danych.
+Przed zapisaniem danych do bazy, uruchamiane są dodatkowe procedury weryfikacyjne i w przypadku gdy obiekt ich nie spełnia, zwracany jest wyjątek.
+Nastąpi to niezależnie od tego czy użyta została standardowa biblioteka JSR-303 czy komponenty związane z frameworkiem.
+
+== Błędy walidacji i interfejs Error
+
+W sytuacji, gdy użyte zostały narzędzia do walidacji dostarczane przez framework, konieczne stało się przygotowanie struktury danych, w której przechowywane i przekazywane były błędy walidacji.
+Rzadko kiedy w aplikacjach spotyka się tak explicite wykorzystanie walidacji dostarczanej przez Springa; w prostszych przypadkach wykorzystuje się standardowe podejście oferowane przez standard Bean Validation.
+Walidacja z wykorzystaniem interfejsów frameworka okazuje się być szczególnie pomocna np. przy obsłudze formularzy na stronach internetowych.
+Wykorzystywane wtedy są mechanizmy `DataBinding` i Spring samodzielnie zajmuje się tworzeniem obiektów, wypełnianiem obiektów odpowiednimi wartościami oraz walidacją.
+Niemniej jednak, niezależnie od wybranego sposobu walidacji, błędy zawsze zwracane są w tej takiej samej strukturze, gdzie kluczem jest nazwa atrybutu (patrząc od głównego korzenia).
+Na tej podstawie możliwe jest odczytanie wyniku walidacji (komunikat o błędzie), jak i wartości, która zostały odrzucone.
+
+We wszystkich powyższych przykładach komunikaty o błędach były 'na sztywno' zapisane w kodzie programu. Nie jest to podejście zalecane, szczególnie gdy planujemy aby tworzony system oferował minimalną elastyczność (np. wspierał więcej niż jeden język).
+W takiej sytuacji, istnieje możliwość wykorzystania interfejsu `MessageBundle` i przechowania treści wiadomości w zewnętrznym pliku, posługując się w kodzie aplikacji jedynie kluczem.
+Aby móc skorzystać z takiej własności frameworka musimy kolejny komponent w konfiguracji tworzonej aplikacji.
+
+[source, xml]
+----
+<bean id="messageSource"
+	class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+	<property name="basename" value="classpath:messages" />
+	<property name="defaultEncoding" value="UTF-8"/>
+</bean>
+----
+
+Powyższa instrukcja informuje framework, że przygotowane są wersje językowe, których należy użyć w aplikacji.
+Poprzez atrybuty `basename`, wskazujemy lokalizację plików z tłumaczeniami.
+Jest to bazowa nazwa pliku, gdzie dla każdego kolejnego języka dodawana jest odpowiednia końcówka (np. `messages_en.properties`, `messages_pl.properties`).
+Jeżeli korzystamy z webowego frameworka (np. Spring MVC) to odpowiednie wartości mogą być wybierane automatycznie, na bazie danych przekazywanych przez przeglądarkę (takich jak domyślna lokalizacja, _locale_).
+Można to także wykonać samodzielnie (programistycznie) wykorzystując komponent `MessageSource`.
+
+[source, java]
+----
+@Resource
+MessageSource messages;
+
+//..
+
+String englishMessage = messages.getMessage(
+	e.getCode() + "." + e.getObjectName() + "." + e.getField(),
+	null, Locale.ENGLISH);
+System.out.println(" * " + englishMessage);
+
+String polishMessage = messages.getMessage(
+	e.getCode() + "." + e.getObjectName() + "." + e.getField(),
+	null, new Locale("PL"));
+System.out.println(" * " + polishMessage);
+----
+
+Konstrukcja pliku `message_xx.properties` jest dowolna, ważne jest jedynie aby klucze w pliku properties zgadzały się z tymi wykorzystywanymi w aplikacji.
+Konwencja sugeruje wykorzystanie nazewnictwa [nazwa_błedu].[obiekt].[atrybut_obiektu] (i taka konwencja wykorzystywana jest np. w aplikacjach webowych).
+Dlatego też w powyższym przykładzie plik z tłumaczeniami może wyglądać następująco (odpowiednio dla języka angielskiego i polskiego).
+
+[source, txt]
+----
+Future.task.date = Invalid date; expected date from the future #<1>
+Future.task.date = Nieprawid\u0142owa data. #<2>
+----
+<1> Wpis z pliku `message_en.properties`- wersja angielska
+<2> Wpis z pliku `message_pl.properties`- wersja polska. +
+Pliki properties nie obsługują znaków UTF dlatego polskie znaki zostały zastąpienia kodem UTF-8.
+
+== W kolejnym module...
+
+W kolejnym module przyjrzymy się w jaki sposób framework uruchamia dodatkowe operacje (jak np. walidacja).
+W jaki sposób framework dodaje do naszej aplikacji nowe funkcjonalności.
+Odbywa się to z wykorzystaniem aspektów i tę koncepcję omówimy w kolejnej części.
+

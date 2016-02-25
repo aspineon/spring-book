@@ -7,4 +7,8 @@ include::sections/modul00-intro.adoc[]
 
 <<<<
 
-include::sections/modul01-wprowadzenie.adoc[]
+include::sections/modul01-wprowadzenie.adoc[leveloffset=+1]
+
+<<<<
+
+include::sections/modul05-walidacja.adoc[leveloffset=+1]

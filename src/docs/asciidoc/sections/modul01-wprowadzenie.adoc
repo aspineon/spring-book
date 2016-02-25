@@ -1,10 +1,11 @@
-== Moduł 1: Wprowadzenie
+
+= Część 1: Wprowadzenie
 
 ////
 TODO: zdefiniować wymagania od czytalnika (co musi wiedzieć) a także co zrobić aby uruchomić przykłady (i na której wersji frameworka przykłady bazują)
 ////
 
-=== Spring Framework
+== Spring Framework
 
 Spring został zainicjowany w roku 2000 - tj. powstawał przez przeszło 10 lat.
 Początkowo jako alternatywa dla przerośniętej i nadmiernie skomplikowanej specyfikacji EJB 2.x.
@@ -15,18 +16,21 @@ W założeniu Spring Framework miał być remedium na problemy które Rod Johnso
 Pamiętajmy, iż początek 21 wieku to okres 'panowania' architektury J2EE ze wszystkimi jest wadami i bolączkami.
 Alternatywą miał być właśnie Spring. Podstawowymi założeniami narzędzia było:
 
-* *Integracja kluczowych obszarów*.
+Integracja kluczowych elementów oprogramowania::
 Skupienie się na obszarach które inne narzędzia traktują po macoszemu; platforma J2EE oferowała szereg doskonałych narzędzi w zakresie utrwalania (persistence), zdalnych wywołań (remoting), www (web frameworks).
 Jednakże integracja tych narzędzi była kwestią problematyczną.
 Spring oferował kompletne rozwiązanie umożliwiające połączenie różnych frameworków.
-* *Brak wymagań infrastrukturalnych*.
+
+Brak wymagań infrastrukturalnych::
 Aplikację opartą o Spring Framework od samego początku można było uruchomić na najzwyklejszej platformie Java - bez konieczności instalowania dodatkowych serwerów aplikacyjnych.
-* *Łatwość użycia* - w porównaniu z J2EE.
+
+Łatwość użycia _- w porównaniu z J2EE_::
 Od samego początku Spring Framework po prostu działał, nie wymagając ponoszenia dodatkowych nakładów na konfigurację platformy.
-* *Testowalność* - wynikająca bezpośrednio z paradygmatu POJO programming.
+
+Testowalność _- wynikająca bezpośrednio z paradygmatu POJO programming_::
 Co więcej, w przeciewieństwie do większość serwerów aplikacyjnych, Spring dostarczał narzędzia do testowania, umożliwiając zastępowanie pewnych elementów platformy namiastkami (ang. mock).
 Dzięki temu można było uruchomić aplikację bez konieczności czasochłonnego wdrażania jej na środowisko testowe. +
-Brak takiego wsparcia jest jednym z większych problemów na platformie JEE.
+Brak takiego wsparcia jest jednym z większych problemów na platformie JavaEE.
 Czasami można odnieść wrażenie, że w czasie projektowania i prac nad specyfikacją nikt nie pomyślał o sposobach testowania tych rozwiązań, zostawiając w całości problem programistom (i ich lepszym lub gorszym pomysłom.
 W przypadku Springa od pierwszych wydań widać pragmatyzm i doświadczenie autorów w zakresie testowania jednostkowego i integracyjnego.
 
@@ -34,17 +38,17 @@ Spring Framework z łatwością stał się alternatywą dla J2EE; do działania 
 Spring od samego początku zapewniał daleko idącą modularność i lekkość, w opozycji do przeładowanych serwerów aplikacji (oferujących cały zestaw narzędzi zgodnych ze specyfikacją EJB - niezależnie od wymagań aktualnego rozwiązania).
 Budując prostą stronę internetową nie ma konieczności używania kolejek JMS, natomiast wsparcie dla transakcji może okazać się bardzo przydatne.
 Serwery aplikacji z reguły monolityczne w swojej budowie byty, uniemożliwiające łatwe wyłączenie pewnych elementów - Spring pozwalał na to od samego początku.
-Nawet zaproponowany wraz z JEE6 koncept profili (_web profile_ i _full profile_) nie pozwalają na taką elastyczność konfiguracyjną jak Spring Framework.
+Nawet zaproponowany wraz z JavaEE 6 koncept profili (_web profile_ i _full profile_) nie pozwalają na taką elastyczność konfiguracyjną jak Spring Framework.
 
 Rozwój frameworku rozpoczął się od części obecnie znanej jako spring-mvc (implementacja wzorca Model View Controller) - stamtąd pochodzą najstarsze klasy narzędzia.
 Uważa się że to właśnie Spring jest protoplastą paradygmatu POJO programming - opisanego m.in. w książce Roda Johnsona: J2EE Development without EJB.
 
 Początkowa alternatywność wobec rozwiązań opartych o EJB przestaje mieć obecnie znaczenie.
-Platforma Spring i JEE od pewnego czasu zbliżają się do siebie, jeżeli chodzi o łatwość tworzenia aplikacji oraz w kwestii produktywności programistów (JEE6 jest tutaj kamieniem milowym).
+Platforma Spring i JavaEE od pewnego czasu zbliżają się do siebie, jeżeli chodzi o łatwość tworzenia aplikacji oraz w kwestii produktywności programistów (JavaEE 6 jest tutaj kamieniem milowym).
 Spring wciąż jawi się jako rozwiązanie daleko bardziej modularne i lżejsze.
 Co więcej, Spring ułatwia dowolny dobór bibliotek w projekcie i nie ogranicza programisty do zestawu standardowych narzędzi - jak ma to miejsce na platformie Java EE
 
-=== POJO Programming
+== POJO Programming
 
 POJO to skrót od Plain Old Java Object, czyli prosty obiekt, nie związany z jakąkolwiek biblioteką, środowiskiem, serwerem, frameworkiem (ang. framework agnostic), nie implementujący jakichkolwiek specyficznych interfejsów (np. tych związanych z platformą, z EJB 2.x).
 Jedyną i najważniejszą odpowiedzialnością takich obiektów jest przechowywanie danych i/lub realizacja usług (funkcjonalności) biznesowych.
@@ -54,7 +58,7 @@ Dzięki temu do testowania aplikacji nie jest wymagany kontener (serwer aplikacj
 Co więcej - tworzone klasy mogą być użyte poza główną aplikacją, umożliwiając łatwe współdzielenie kodu pomiędzy różnymi środowiskami.
 Architektura rozwiązania jest czysta i przejrzysta, znacznie ułatwiając próg wejścia w kod.
 
-=== Elementy frameworka
+== Elementy frameworka
 
 Od samego początku Spring składał się z więcej niż jednego modułu:
 
@@ -66,7 +70,7 @@ Od samego początku Spring składał się z więcej niż jednego modułu:
 * Implementacja wzorca MVC (Model-Widok-Kontroler, ang. Model-View-Controller), generyczny framework webowy mogący działać niezależnie, integrując się z czystym JSP lub w połączeniu dowolnym innym narzędziem do generowania widoków (np. Velocity)
 * Obsługa zdalnych wywołań, poprzez web service, RMI
 
-=== Spring obecnie
+== Spring obecnie
 
 Na przestrzeni ostatnich 10 lat framework zmieniał się i rozwijał, z frameworka stał się ekosystemem narzędzi wspierających programistę.
 Rod Johnson od zawsze podkreślał że Spring oparty jest na trzech filarach: elastyczność (portability), efektywność (productivity) oraz innowacyjność (innovation).
@@ -90,51 +94,98 @@ Oba te narzędzia były przez długi czas mocno wspierane przez firmę rozwijaj�
 Mogłoby się wydawać że są to już rzeczy bardzo subtelnie powiązane ze Spring Framework - nic bardziej mylnego.
 Omawiany framework jest na przykład kluczowym elementem Grails i umiejętność posługiwania się frameworkiem leży u podstaw zrozumienia całego szeregu narzędzi dostarczanych przez SpringSource.
 
-//TODO: tutaj skończyłem
+== Spring Framework a EJB
 
-=== Spring Framework a EJB
+Jak już podkreślałem, Spring projektowany był jako alternatywa wobec EJB (_Enterprise Java Beans_).
+Jeżeli przyjmiemy optykę tamtych lat, to każde rozwiązanie alternatywne wobec rozdmuchanego _standardu_ było na wagę złota.
+Jednak, wraz z biegiem czasu Spring i EJB stały się rozwiązaniami komplementarnymi; każdy z frameworków ma swoje wady i zalety, wymusza pewne specyficzne decyzje architektoniczne.
+Spring z małego i lekkiego narzędzia rozrósł się o masę modułów i dodatków.
+Z kolei twórcy EJB dostrzegli ociężałość technologii i każde kolejne wydanie specyfikacji EJB powodowało, że platforma JavaEE stawała się lżejsza i elastyczniejsza.
+Nie da się jednak pominąć kilku istotnych różnic pomiędzy tymi dwoma technologiami:
 
-Jak już podkreśliłem, Spring projektowany był jako alternatywa wobec EJB. Można jednak powiedzieć, że wraz z biegiem czasu Spring i EJB stały się rozwiązaniami komplementarnymi; każdy z frameworków ma swoje wady i zalety, wymusza pewne specyficzne decyzje architektoniczne. Spring z małego i lekkiego narzędzia rozrósł się o masę modułów i dodatków. Z kolei twórcy EJB dostrzegli ociężałość technologii i każde kolejne wydanie specyfikacji EJB powodowało, że platforma JEE stawała się lżejsza i elastyczniejsza. Nie da się jednak pominąć kilku istotnych różnic pomiędzy tymi dwoma technologiami:
+Modularność::
+Java Enterprise Edition (czyli platforma, która wykorzystuje EJB jako komponenty biznesowe) jest całością i nie ma możliwości skorzystania tylko z niektórych (wybranych) elementów.
+JavaEE łączy się z konkretnym zestawem API z których należy korzystać: EJB (komponenty), JPA (dostęp do bazy danych), JMS (kolejny, asynchroniczność), JSF (warstwa prezentacji).
+Co więcej, wszystkie te elementy są obecne w każdym serwerze aplikacji zgodnym z JavaEE, nawet jeżeli rozwiązanie które budujemy nie ma potrzeby z nich korzystać. +
+Istniejąca od wersji JavaEE 6 koncepcja profili stara się jakoś zaadresować ten problem, jednak wydaje się to zrobione zbyt późno i w zbyt wąskim zakresie. +
++
+Podejście Spring'owe jest diametralnie inne; Spring umożliwia dowolne łączenie narzędzi i bibliotek.
+Nacisk stawiany jest na ograniczenie ilość wykorzystywanych modułów, które dołączane są do aplikacji dopiero gdy zachodzi taka potrzeba.
+Co więcej, Spring nie wymusza korzystania z konkretnego API i pozostawia dowolność programiście (architektowi). Nie ma znaczenie czy dostęp do bazy danych zostanie zrealizowany poprzez JPA (Hibernate) czy poprzez iBatis lub z wykorzystaniem bezpośredniej komunikacji po JDBC.
 
-Modularność: Java Enterprise Edition (czyli platforma, która wykorzystuje EJB jako komponenty biznesowe) jest całością i nie ma możliwości skorzystania tylko z niektórych elementów. JEE łączy się z konkretnym zestawem API z których należy korzystać: EJB (komponenty), JPA (dostęp do bazy danych), JMS (kolejny, asynchroniczność), JSF (warstwa prezentacji). Co więcej, wszystkie te elementy są obecne w każdym serwerze aplikacji zgodnym z JEE, nawet jeżeli rozwiązanie które budujemy nie ma potrzeby z nich korzystać.
+Częstotliwość wprowadzania zmian::
+Spring żyje, nowe wersje biblioteki pojawiają się z dużą regularnością; rozwojem frameworka zarządza pojedyncza organizacja (firma) i ona jest odpowiedzialna za nowe elementy pojawiające się w narzędziu.
+Wciąż jednak framework, jako taki, pozostaje narzędziem o otwartym kodzie źródłowym, opartym na otwartej licencji. +
++
+Przeciwnością jest specyfikacja EJB, która rodzi się w bólach, nowe wersje pojawiają się raz na kilka lat.
+Przez ten czas programiści zmuszani są do korzystania z rozwiązań coraz bardziej archaicznych lub zaczynają korzystać z rozszerzeń oferowanych przez poszczególnych producentów serwerów aplikacji (ang. verndor specific extensions).
+Powoduje to jednak przywiązanie do konkretnego producenta / serwera aplikacji.
+Czasem nawet do konkretnej wersji serwera.
 
-Podejście Spring'owe jest diametralnie inne; Spring umożliwia dowolne łączenie narzędzi i bibliotek. Nacisk stawiany jest na ograniczenie ilość wykorzystywanych modułów, które włączane są do aplikacji dopiero gdy zachodzi taka potrzeba. Co więcej, Spring nie wymusza korzystania z konkretnego API i pozostawia dowolność programiście (architektowi). Nie ma znaczenie czy dostęp do bazy danych zostanie zrealizowany poprzez JPA (Hibernate) czy poprzez iBatis lub z wykorzystaniem bezpośredniej komunikacji po JDBC.
+Przenaszalność::
+Spring jest całością samą w sobie; decydując się na użycie tego frameworka, używamy także dostarczanego przez Spring kontenera – pomostu pomiędzy aplikacją a serwerem (środowiskiem) gdzie aplikacja jest uruchamiana. +
++
+W przypadku EJB sprawa jest bardziej skomplikowana.
+Oparcie platformy JavaEE o szereg standardów pozwalało (w teorii) na dowolne przenoszenie aplikacji pomiędzy serwerami aplikacyjnymi, dostarczanymi przez różnych producentów.
+W praktyce jednak (co podkreślałem już w poprzednim punkcie), specyfikacja pozostawiła stosunkowo szerokie pole niedookreślone, pozostawiając dużą dowolność dostawcom.
+Poprzez to niezmiernie ciężko spotkać aplikację niezależną od tzw. vendor extensions, czyli elementów ściśle zintegrowanych z konkretnym serwerem aplikacji.
 
-Częstotliwość zmian: Spring żyje, nowe wersje biblioteki pojawiają się z dużą regularnością; rozwojem frameworka zarządza jedna firma: SpringSource i ona jest odpowiedzialna za to jakie nowe elementy pojawiają się w narzędziach. Wciąż jednak framework, jako taki, pozostaje narzędziem o otwartym kodzie źródłowym, opartym na otwartej licencji
+Najważniejszym wniosek płynącym z takiego porównania to że te same wymagania są możliwe do zrealizowania zarówno wykorzystując EJB (platformę JavaEE) oraz Springa (wraz z otaczającymi modułami).
+Spring oferuje bogactwo opcji, a co za tym idzie konieczność podejmowania szeregu decyzji projektowych, decyzji wymagających doświadczenia oraz praktyki.
+Natomiast w przypadku EJB korzystamy z konkretnego zestawu narzędzi; jeżeli te narzędzia są odpowiednie do naszych potrzeb – tym lepiej, nie mamy bowiem możliwości zmian.
+Z powodu takiej a nie innej konstrukcji platformy, zwolnieni zostaliśmy z konieczności podejmowania szeregu nietrywialnych decyzji projektowych i zaistniałą sytuację musimy zaakceptować taką jak jest.
 
-Alternatywnie, specyfikacja EJB rodzi się w bólach, nowe wersje pojawiają się raz na kilka lat. Przez ten czas programiści zmuszani są do korzystania z rozwiązań coraz bardziej archaicznych lub zaczynają korzystać z rozszerzeń oferowanych przez poszczególnych producentów serwerów aplikacji (ang. verndor specific extensions). Powoduje to jednak przywiązanie do konkretnego producenta / serwera aplikacji. Czasem nawet do konkretnej wersji serwera.
+== Zakres książki
 
-Przenaszalność: Spring jest całością samą w sobie, decydując się na użycie tego frameworka, używamy także dostarczanego przez Spring kontenera – pomostu pomiędzy aplikacją a serwerem (środowiskiem) gdzie aplikacja jest uruchamiana. W przypadku EJB sprawa jest bardziej skomplikowana. Oparcie platformy JEE o szereg standardów pozwalało (w teorii) na dowolne przenoszenie aplikacji pomiędzy serwerami aplikacji dostarczanymi przez różnych producentów. W praktyce jednak (co podkreśliłem już w poprzednim punkcie), specyfikacja pozostawiła stosunkowo szerokie pole niedookreślenia, pozostawiając dużą dowolność producentom serwera. Poprzez to niezmiernie ciężko spotkać aplikację niezależną od tzw. vendor extensions, czyli elementów ściśle zintegrowanych z konkretnym serwerem aplikacji.
+Jak już niejednokrotnie podkreślałem, Spring Framework jest bardzo potężnym narzędziem do tworzenia aplikacji w języku Java.
+W książce skupię się na najważniejszych aspektach frameworka, które zostaną podzielone na następujące części:
 
-Podstawowym wnioskiem płynącym z takiego porównania jest to że te same wymagania jesteśmy w stanie zrealizowań zarówno wykorzystując EJB (platformę JEE) oraz Springa (wraz z otaczającymi modułami). Spring oferuje bogactwo opcji, a co za tym idzie konieczność podejmowania szeregu decyzji projektowych, decyzji wymagających doświadczenia oraz praktyki. Natomiast w przypadku EJB zmuszenia jesteśmy do skorzystania z konkretnego zestawu narzędzi; jeżeli te narzędzia są odpowiednie do naszych potrzeb – tym lepiej, nie mamy bowiem możliwości zmian. Z powodu takiej a nie innej konstrukcji platformy, zwolnieni zostaliśmy z konieczności podejmowania szeregu nietrywialnych decyzji projektowych i zaistniałą sytuację musimy zaakceptować taką jak jest.
+Kontener::
+Głównym elementem Spring Framework jest kontener który realizuje proces wstrzykiwania zależności (odwrócenie kontroli - ang. Inversion of Control).
+Omówię jaki sposób uruchomić kontener, jak go skonfigurować, dodać komponenty i w jaki sposób opisać zależności pomiędzy komponentami: poprzez adnotacje, poprzez konfigurację w pliku XML lub popraz skrypt konfiguracyjny. +
++
+Komponenty dodane do kontenera są przez niego zarządzanie.
+Opiszę ich cykl życia; w jaki sposób framework tworzy obiekty, zarządza nimi i w jaki sposób programista może wpłynąć na poszczególne działania kontenera.
 
+Wstrzykiwanie zależności::
+W kolejnej części dokładniej poruszę temat związany z wstrzykiwaniem zależności.
+Jest to jeden z istotniejszych elementów Spring dlatego warto poświęcić więcej uwagi i dokładnie przeanalizować sposoby budowania zależności, różnych możliwości tworzenia obiektów itd.
 
+Walidacja::
+Aplikacje wymagają sprawdzenia poprawności wprowadzanych danych (walidacji).
+Spring w tym zakresie implementuje jeden ze standardów Javy (JSR-303); omówię jak działa walidacja, w jaki sposób ją skonfigurować i wykorzystać w aplikacji.
 
-=== Program szkolenia
+Baza danych::
+Kluczowym elementem większości systemów informatycznych jest baza danych.
+W tej kwestii Spring nie odkrywa koła na nowo (nie narzuca jakiegokolwiek, własnego sposobu komunikacji z bazą danych) tylko umożliwia połączenie poprzez najchętniej przez nas wykorzystywane narzędzie; czy to Hibernate, czy iBatis, czy bezpośrednie JDBC.
+W kolejnym module przyjrzę się dokładnie w jaki sposób powinno to zostać zrealizowane w aplikacji opartej o Spring Framework.
 
-Tak jak już pisałem, Spring Framework stanowi rdzeń wszystkich rozwiązań dostarczanych przez SpringSource. Dodatkowo, sam w sobie, jest bardzo potężnym narzędziem do tworzenia aplikacji w języku Java. W niniejszym szkoleniu skupimy się na najważniejszych aspektach frameworku, które zostaną podzielone na następujące moduły:
+Aspekty::
+Kolejny moduł będzie dotyczył już tematów trudniejszych, rzadziej spotykanych - mianowicie aspekty; deklaratywne rozbudowywanie elementów systemu o dodatkowe funkcjonalności, bez konieczności ingerencji w sam kod klasy / moduły. Programowanie w oparciu o aspekty jest nagminnie wykorzystywane w projektowaniu i budowie szeregu narzędzi i frameworków - rzadziej spotyka się je w codziennych projektach. Spring niejako wprowadził te zagadnienia pod strzechy i bardzo mocno ułatwił ich użycie. W tym modelu przyglądniemy się jak konfigurować i używać aspektów.
 
-* Głównym elementem Spring Framework jest kontener który realizuje proces wstrzykiwania zależności (odwrócenie kontroli - ang. Inversion of Control). W jaki sposób uruchomić kontener, jak go skonfigurować, dodać komponenty i w jaki sposób opisać zależności pomiędzy komponentami: poprzez adnotacje, poprzez konfigurację w pliku XML lub popraz skrypt konfiguracyjny.
+Interfejsy WWW::
+Przez całe szkolenie komunikacja z  aplikacją odbywała się poprzez zwykły interfejs tekstowy, poprzez konsolę.
+Nie jest to oczywiście jedyny sposób; Spring oferuje cały szereg narzędzi umożliwiający dostęp do aplikacji poprzez inne kanały (WWW, WebService itp).
+W kolejnym module pokażę w jaki utworzyć aplikację WWW, z wykorzystaniem dostarczanego przez Spring narzędzia Spring MVC.
+Co zrobić aby wykorzystać alternatywny framework jak np. Struts czy JSF bądź (równie łatwo)  opublikować komponenty biznesowe jako usługa web (WebService).
 
-Komponenty dodane do kontenera są przez niego zarządzanie. Omówiony zostanie cykl życia komponentów; w jaki sposób komponenty są tworzone, zarządzane, w jaki sposób programista może wpłynąć na poszczególne działania kontenera.
+Testowanie automatyczne::
+Na sam koniec, choć w zasadzie od tego należałoby zacząć, omówię sposoby pisania testów jednostkowych i integracyjnych w środowisku Spring Framework.
+Jak zaznaczyłem na samym początku, Spring stanowi doskonałą abstrakcję oddzielającą moduły biznesowe od specyficznych aspektów platformy na której aplikacja jest wdrażana.
+Dzięki tej abstrakcji nie ma najmniejszych problemów aby środowiskiem gdzie aplikacja jest uruchamiana były narzędzia do testów jednostkowych.
+Dodatkowo, paradygmat _POJO programming_ nie wymusza implementacji specyficznych interfejsów, dostarczanych przez platformę (jak miało to miejsce w EJB 2.x), dzięki czemu niesamowicie ułatwia testowanie.
 
-* W kolejnej części dokładniej zostanie umówione wstrzykiwanie zależności. Jest to jeden z istotniejszych elementów Spring dlatego warto poświęcić więcej uwagi i dokładnie przeanalizować sposoby budowania zależności, różnych możliwości tworzenia obiektów itd.
-* Aplikacje wymagają sprawdzenia poprawności wprowadzanych danych (walidacji). Spring w tym zakresie implementuje jeden ze standardów Javy (JSR-303); dokładnie zostanie omówione jak działa walidacja, w jaki sposób ją skonfigurować i wykorzystać w aplikacji.
-* Kluczowym elementem większości systemów informatycznych jest baza danych. W tej kwestii Spring nie odkrywa koła na nowo (nie narzuca jakiegokolwiek, własnego sposobu komunikacji z bazą danych) tylko umożliwia połączenie poprzez najchętniej przez nas wykorzystywane narzędzie; czy to Hibernate, czy iBatis, czy bezpośrednie JDBC. W kolejnym module przyjrzymy się dokładnie w jaki sposób powinno to zostać zrealizowane w aplikacji opartej o Spring Framework
-* Kolejny moduł będzie dotyczył już tematów trudniejszych, rzadziej spotykanych - mianowicie aspekty; deklaratywne rozbudowywanie elementów systemu o dodatkowe funkcjonalności, bez konieczności ingerencji w sam kod klasy / moduły. Programowanie w oparciu o aspekty jest nagminnie wykorzystywane w projektowaniu i budowie szeregu narzędzi i frameworków - rzadziej spotyka się je w codziennych projektach. Spring niejako wprowadził te zagadnienia pod strzechy i bardzo mocno ułatwił ich użycie. W tym modelu przyglądniemy się jak konfigurować i używać aspektów.
-* Przez całe szkolenie komunikowaliśmy się z naszą aplikacją poprzez zwykły interfejs tekstowy, poprzez konsolę. Nie jest to oczywiście jedyny sposób; Spring oferuje cały szereg narzędzi umożliwiających publikację aplikacji biznesowej poprzez jeden lub wiele przyjaznych kanałów. W module pokażę w jaki utworzyć aplikację WWW, z wykorzystaniem dostarczanego przez Spring narzędzia Spring MVC lub co zrobić aby wykorzystać alternatywny framework jak np. Struts czy JSF. Równie łatwo komponenty biznesowe opublikować jako web service - i to także zostanie pokazane w module.
-* Na sam koniec, choć w zasadzie od tego należałoby zacząć, omówimy sposoby pisania testów jednostkowych. Jak już zaznaczyłem na samym początku, Spring stanowi doskonałą abstrakcję oddzielającą moduły biznesowe od specyficznych aspektów platformy na której aplikacja jest wdrażana. Dzięki tej abstrakcji nie ma najmniejszych problemów aby platformą wdrożenia były narzędzia do testów jednostkowych. Dodatkowo, paradygmat POJO programming nie wymusza implementacji specyficznych interfejsów, dostarczanych przez platformę (jak miało to miejsce w EJB 2.x) i poprzez to znakomicie ułatwiał testowanie.
+== Środowisko programistyczne
 
+Wszystkie przykłady zaprezentowane w niniejszej książce zostały stworzone przy użyciu Spring Tool Suite - czyli środowiska opartego o platformę Eclipse, dostarczaną przez autorów Frameworka.
+Wszystkie przykłady z powodzeniem będą działać w dowolnym innym środowisku, przy czym nieocenioną zaletą STS jest szereg ułatwień związanych z frameworkiem - na przykład gotowe już wzorce dla szeregu aplikacji opartych o Spring Framework.
+Można wykorzystać tę właściwość aby rozpocząć pierwszy projekt; tworząc nowy “Spring Template Project”.
+Z szeregu dostępnych wzorców wybieramy najprostszy: Sample Spring Utility Project, który będzie zawierał dwa, najważniejsze z naszego punktu widzenia, elementy: spring-context (czyli kontekst aplikacyjny) oraz spring-test (czyli zestaw narzędzi do testowania aplikacji).
+Co więcej - tak utworzony projekt jest w pełni funkcjonalną aplikacją Spring Framework.
 
+Kompletny kod źródłowy przykładów opisywanych w książce (jak i sama treść książki) jest ogólnie dostępna do pobrania z Githuba: link:http://github.com/kubamarchwicki/spring-book[]
 
-=== Środowisko programistyczne
+== W kolejnym module...
 
-Wszystkie przykłady zaprezentowane w niniejszym szkoleniu zostały stworzone przy użyciu Spring Tool Suite - czyli środowiska opartego o platformę Eclipse, dostarczanego przez SpringSource. Wszystkie przykłady z powodzeniem będą działać w dowolnym innym środowisku, przy czym nieocenioną zaletą STS jest szereg ułatwień związanych z frameworkiem - na przykład gotowe już wzorce dla szeregu aplikacji opartych o Spring Framework. Wykorzystamy tę właściwość aby rozpocząć pierwszy projekt; tworząc nowy “Spring Template Project”. Z szeregu dostępnych wzorców wybieramy najprostszy: Sample Spring Utility Project, który będzie zawierał dwa, najważniejsze z naszego punktu widzenia, elementy: spring-context (czyli kontekst aplikacyjny) oraz spring-test (czyli zestaw narzędzi do testowania aplikacji). Co więcej - tak utworzony projekt jest w pełni funkcjonalną aplikację Spring Framework.
-
-
-
-=== W kolejnym module...
-
-Mam nadzieję, że powyższe wprowadzenie zarysowało jakiego typu narzędziem jest Spring framework i jakie może być jego zastosowaniem. W kolejnej części pokażę jak rozpocząć pracę z frameworkiem, jak utworzyć projekt, uruchomić, przedstawię podstawowe kroki potrzebne do napisania aplikacji opartej o Springa.
-
-<<<<
+Mam nadzieję, że powyższe wprowadzenie zarysowało jakiego typu narzędziem jest Spring framework i jakie może być jego zastosowaniem.
+W kolejnej części pokażę jak rozpocząć pracę z frameworkiem, jak utworzyć projekt, uruchomić, przedstawię podstawowe kroki potrzebne do napisania aplikacji opartej o Springa.
